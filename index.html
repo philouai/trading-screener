@@ -219,20 +219,20 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
     <!-- LEFT -->
     <div>
 
-      <!-- API Setup -->
+      <!-- Status Panel -->
       <div class="panel" id="api-panel">
         <div class="ph">
-          <span class="ph-title">API Setup</span>
+          <span class="ph-title">Connection</span>
           <div style="display:flex;align-items:center;gap:6px">
             <div class="status-dot dot-wait" id="api-dot"></div>
-            <span style="font-size:10px;color:var(--muted)" id="api-status-lbl">Not connected</span>
+            <span style="font-size:10px;color:var(--muted)" id="api-status-lbl">Not tested</span>
           </div>
         </div>
         <div class="pb">
-          <div style="font-size:11px;color:var(--muted);line-height:1.5">Paste your <strong style="color:var(--text2)">Cloudflare Worker URL</strong> — saved locally, never sent anywhere else.</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5">Worker URL — pre-configured</div>
           <div class="api-input-wrap">
-            <input class="api-input" id="worker-url" placeholder="https://screener-proxy.yourname.workers.dev" type="url">
-            <button class="btn-save" onclick="saveAndPing()">Test &amp; Save</button>
+            <input class="api-input" id="worker-url" value="https://screener-proxy.philippeaichomier.workers.dev" type="url">
+            <button class="btn-save" onclick="saveAndPing()">Test</button>
           </div>
           <div style="font-size:10px;color:var(--muted)" id="ping-result"></div>
         </div>
@@ -240,7 +240,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 
       <!-- Universe + Market -->
       <div class="panel">
-        <div class="ph"><span class="ph-title">Universe</span><span id="universe-lbl" style="font-size:11px;color:var(--muted)">Russell 1000 · 1000 stocks</span></div>
+        <div class="ph"><span class="ph-title">Universe</span><span id="universe-lbl" style="font-size:11px;color:var(--muted)">Russell 2000 · 1000 stocks</span></div>
         <div class="pb">
           <div class="mpills">
             <button class="mpill us-on" id="mpill-us" onclick="setMarket('us')"><span class="fl">🇺🇸</span> US Markets</button>
@@ -273,7 +273,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
         </div>
       </div>
 
-      <button class="btn-run us" id="run-btn" onclick="startScan()">Run full Russell 1000 scan</button>
+      <button class="btn-run us" id="run-btn" onclick="startScan()">Run full Russell 2000 scan</button>
       <button class="btn-sec" id="delta-btn" onclick="startDelta()" style="display:none">↑ Re-scan: new stocks only</button>
       <button class="btn-sec" onclick="clearCache()" id="clear-btn" style="display:none">Clear cache &amp; reset</button>
     </div>
@@ -331,22 +331,22 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 
 <script>
 /* ═══ TICKERS ═══ */
-const RUSSELL1000 = "MMM,AOS,ABT,ABBV,ACN,ADBE,AMD,AES,AFL,A,APD,ABNB,AKAM,ALB,ARE,ALGN,ALLE,LNT,ALL,GOOGL,GOOG,MO,AMZN,AMCR,AEE,AAL,AEP,AXP,AIG,AMT,AWK,AMP,AME,AMGN,APH,ADI,ANSS,AON,APA,AAPL,AMAT,APTV,ACGL,ADM,ANET,AJG,AIZ,T,ATO,ADSK,AZO,AVB,AVY,AXON,BKR,BALL,BAC,BAX,BDX,BRK.B,BBY,BIO,BIIB,BLK,BK,BA,BKNG,BWA,BSX,BMY,AVGO,BR,BRO,BF.B,BLDR,BG,CDNS,CZR,CPT,CPB,COF,CAH,KMX,CCL,CARR,CTLT,CAT,CBOE,CBRE,CDW,CE,COR,CNC,CNX,CDAY,CF,CRL,SCHW,CHTR,CVX,CMG,CB,CHD,CI,CINF,CTAS,CSCO,C,CFG,CLX,CME,CMS,KO,CTSH,CL,CMCSA,CAG,COP,ED,STZ,CEG,COO,CPRT,GLW,CPAY,CTVA,CSGP,COST,CTRA,CRWD,CCI,CSX,CMI,CVS,DHR,DRI,DVA,DAY,DECK,DE,DELL,DAL,DVN,DXCM,FANG,DLR,DFS,DG,DLTR,D,DPZ,DOV,DOW,DHI,DTE,DUK,DD,EMN,ETN,EBAY,ECL,EIX,EW,EA,ELV,EMR,ENPH,ETR,EOG,EPAM,EQT,EFX,EQIX,EQR,ESS,EL,ETSY,EG,EVRG,ES,EXC,EXPE,EXPD,EXR,XOM,FFIV,FDS,FICO,FAST,FRT,FDX,FIS,FITB,FSLR,FE,FI,FMC,F,FTNT,FTV,FOXA,FOX,BEN,FCX,GRMN,IT,GE,GEHC,GEV,GEN,GNRC,GD,GIS,GM,GPC,GILD,GPN,GL,GDDY,GS,HAL,HIG,HAS,HCA,DOC,HSIC,HSY,HES,HPE,HLT,HOLX,HD,HON,HRL,HST,HWM,HPQ,HUBB,HUM,HBAN,HII,IBM,IEX,IDXX,ITW,INCY,IR,PODD,INTC,ICE,IFF,IP,IPG,INTU,ISRG,IVZ,INVH,IQV,IRM,JKHY,J,JBL,JPM,K,KVUE,KDP,KEY,KEYS,KMB,KIM,KMI,KLAC,KHC,KR,LHX,LH,LRCX,LW,LVS,LDOS,LEN,LLY,LIN,LYV,LKQ,LMT,L,LOW,LULU,LYB,MTB,MRO,MPC,MKTX,MAR,MMC,MLM,MAS,MA,MTCH,MKC,MCD,MCK,MDT,MRK,META,MET,MTD,MGM,MCHP,MU,MSFT,MAA,MRNA,MHK,MOH,TAP,MDLZ,MPWR,MNST,MCO,MS,MOS,MSI,MSCI,NDAQ,NTAP,NFLX,NEM,NWSA,NWS,NEE,NKE,NI,NDSN,NSC,NTRS,NOC,NCLH,NRG,NUE,NVDA,NVR,NXPI,ORLY,OXY,ODFL,OMC,ON,OKE,ORCL,OTIS,PCAR,PKG,PANW,PH,PARA,PAYX,PYPL,PNR,PEP,PFE,PCG,PM,PSX,PNW,PNC,POOL,PPG,PPL,PFG,PG,PGR,PRU,PEG,PSTG,PTC,PSA,PHM,QRVO,PWR,QCOM,DGX,RL,RJF,RTX,O,REG,REGN,RF,RSG,RMD,RVTY,ROK,ROL,ROP,ROST,RCL,SPGI,CRM,SBAC,SLB,STX,SRE,NOW,SHW,SPG,SWKS,SJM,SNA,SOLV,SO,LUV,SWK,SBUX,STT,STLD,STE,SYK,SYF,SNPS,SYY,TMUS,TROW,TTWO,TPR,TRGP,TGT,TEL,TDY,TFX,TER,TSLA,TXN,TXT,TMO,TJX,TSCO,TT,TDG,TRV,TRMB,TFC,TYL,TSN,USB,UBER,UDR,UHS,UNP,UAL,UPS,URI,UNH,VLO,VTR,VRSN,VRSK,VZ,VRTX,VLTO,VMC,GWW,WAB,WBA,WMT,WBD,WM,WAT,WEC,WFC,WELL,WST,WDC,WY,WMB,WTW,WYNN,XEL,XYL,YUM,ZBRA,ZBH,ZTS,ACHC,ACIW,ACM,ADNT,AEG,AEHR,AEIS,AFL,AGCO,AGR,AIG,AIR,AIT,AJG,AKAM,AL,ALG,ALGT,ALHC,ALKS,ALLE,ALNY,ALV,AM,AMBC,AMG,AMKR,AMN,AMPH,ANF,AOS,APA,APG,APPF,APPN,APPS,APT,APTI,ARES,AROC,ARW,ASH,ASTE,ATEC,ATMU,ATR,AUB,AVA,AVAV,AVNT,AWI,AX,AXS,AZEK,AZTA,BC,BCRX,BDC,BEN,BFAM,BG,BGC,BHE,BIRK,BJ,BKD,BKNG,BL,BLKB,BMS,BOH,BOX,BPOP,BRC,BRBR,BRX,BSIG,BURL,BWA,CABO,CALM,CARG,CARS,CASY,CBSH,CC,CCCS,CCK,CDK,CENTA,CENX,CERT,CG,CGC,CHDN,CHEF,CHH,CHX,CI,CLB,CLF,CLFD,CLH,CLX,CMC,CMEN,CNA,CNMD,CNXC,COHU,COKE,COLB,CONE,COOP,CORE,COTY,CPF,CPK,CPRX,CRC,CRGY,CRI,CRK,CRNX,CRS,CSGS,CSWI,CTRE,CUZ,CVBF,CVET,CWK,CWT,CXM,CYTK,DAR,DBD,DDS,DEI,DFIN,DG,DGX,DHX,DKS,DLB,DNOW,DORM,DRH,DRI,DT,DXC,DXPE,DY,EBC,EFC,EFX,EGP,ELAN,EME,ENOV,ENR,ENVA,EOG,EPC,EPRT,ESAB,ESNT,ESRT,ETRN,EVTC,EWBC,EXEL,EXP,EXPO,EXTR,FAF,FARO,FBP,FBNC,FCNCA,FCPT,FHB,FHN,FIX,FIZZ,FLDM,FLNC,FLS,FLT,FMC,FNDF,FNKO,FORM,FOXF,FPH,FR,FRPT,FUL,FULT,GATX,GEF,GHC,GMS,GNW,GOLF,GPK,GPI,GRBK,GXO,H,HAFC,HALO,HASI,HAYW,HBI,HCSG,HHC,HI,HIW,HLNE,HMST,HNI,HOMB,HPP,HQY,HR,HROW,HSII,HUN,HURN,HWKN,IBP,ICFI,IDCC,IDEX,IEX,INN,INSW,INTA,INTG,INVA,IPAR,IPGP,IRT,ITT,JACK,JBGS,JBHT,JELD,JHG,JJSF,JLL,JOE,JOBY,JOUT,KAI,KBH,KBR,KFRC,KMT,KNF,KNX,KNTK,KOF,KOP,KRC,KRYS,KTB,KWR,LANC,LAUR,LBRT,LCI,LDI,LEA,LECO,LGIH,LII,LKFN,LMB,LNC,LNW,LOPE,LSTR,LTC,LXP,M,MARA,MBC,MBWM,MC,MCY,MDU,MGEE,MGNX,MGPI,MLI,MLKN,MMI,MMSI,MMS,MNKD,MOG.A,MPW,MRCY,MRC,MSGE,MSGS,MTH,MTN,MTX,MUR,NARI,NBR,NBTB,NCR,NEP,NFBK,NHC,NHI,NJR,NNN,NOVT,NPO,NRC,NRG,NSA,NTRA,NUE,NVCR,NVT,NWE,NWL,NXST,NYMT,OBK,OC,OFC,OFG,OGE,OGS,OHI,OII,OLLI,OLPX,OMF,ONB,ORA,ORLY,OTIS,OUT,OXM,PATK,PAX,PAYC,PAYO,PBCT,PBFS,PBH,PCAR,PCH,PEN,PENN,PFSI,PGC,PGTK,PINC,PIPR,PLAY,PLMR,PLXS,PNM,PODD,POOL,POST,POWL,PRG,PRGS,PRGO,PRIM,PRK,PRVA,PSB,PTCT,PVH,PVTL,QCR,QLYS,QNST,RBC,RCM,RDNT,RES,REX,RFNB,RHP,RIG,RLI,RMBS,RMD,ROAD,ROG,RPAI,RPM,RRX,RSG,RUSHA,RXO,SAFE,SBCF,SBH,SBOW,SBRA,SBUX,SCL,SCSC,SEIC,SF,SFM,SGBX,SHAK,SIGI,SIG,SITC,SITE,SJW,SKYW,SLG,SM,SMPL,SNEX,SNV,SONO,SPB,SPNT,SSD,STC,STEP,STRL,SUM,SWN,SXI,SXT,SYNA,TALO,TBBK,TBI,TCBK,TGNA,TILE,TKR,TMHC,TNET,TNL,TPVG,TRGP,TRIP,TRS,TRST,TRUP,TRVG,TTC,TTEC,TTM,TUYA,TW,TWI,TXRH,TYL,UCBI,UE,UFCS,UFP,UGI,UMBF,UMH,UNF,UNVR,UVV,VBTX,VC,VFC,VGR,VHC,VLY,VMI,VNDA,VNO,VRTS,VSH,VSTO,VVV,WABC,WAL,WASH,WBS,WD,WEN,WEX,WHD,WMS,WOR,WPC,WPCGY,WRB,WSO,WTS,WTTR,WU,WWW,XRX,XRAY,Y,YETI,YORW,ZBH,ZI,ZUO".split(',');
-const SP500 = RUSSELL1000.slice(0, 503); // S&P 500 is subset
+const RUSSELL2000 = "AACI,AACT,AAOI,AAPX,ABCB,ABCL,ABEO,ABMD,ABNB,ABOS,ABST,ABTX,ABVC,ACAD,ACAX,ACBA,ACCD,ACET,ACGL,ACHC,ACHR,ACIW,ACLS,ACMR,ACNB,ACOM,ACRS,ACRV,ACST,ACTG,ACVA,ACXP,ADAP,ADBE,ADCT,ADEA,ADEN,ADGM,ADMA,ADMP,ADNT,ADRO,ADSE,ADSK,ADTN,ADUS,ADVM,AEIS,AELB,AENZ,AERI,AEVA,AFCG,AFIB,AFMD,AFRI,AFYA,AGBA,AGEN,AGFS,AGFY,AGIL,AGIO,AGMH,AGMS,AGNCN,AGND,AGO,AGRI,AGRO,AGRX,AGTI,AGYS,AHCO,AHPI,AIMD,AINC,AIOT,AIRC,AIRG,AIRT,AIXI,AJRD,AKBA,AKLI,AKRO,AKTS,AKTX,AKUS,ALBO,ALBT,ALCC,ALCO,ALEC,ALEX,ALGT,ALHC,ALIM,ALKS,ALKT,ALLK,ALLT,ALMY,ALNT,ALNY,ALOT,ALPN,ALRN,ALRS,ALSA,ALTG,ALTO,ALTR,ALUS,ALVO,ALXO,AMBC,AMBI,AMBO,AMCX,AMED,AMEH,AMES,AMGN,AMHC,AMIX,AMKR,AMNB,AMOT,AMPH,AMPI,AMRK,AMRN,AMRS,AMSC,AMSF,AMTB,AMWL,AMZN,ANAB,ANDE,ANGI,ANGO,ANIK,ANIP,ANNX,ANPC,ANSS,ANTE,ANTX,ANVS,AORT,APAM,APEI,APG,APGE,APLD,APLM,APLS,APLT,APM,APOG,APOP,APPF,APPN,APPS,APRE,APRL,APRT,APTO,APTX,APWC,APXI,APYX,AQB,AQMS,AQST,ARAV,ARBE,ARCO,ARCT,ARDX,AREC,ARGX,ARHS,ARIS,ARKO,ARKR,ARLP,ARMK,ARMP,ARNC,AROC,AROW,ARQT,ARRY,ARTL,ARTNA,ARTW,ARVN,ARWR,ARYA,ASAI,ASAR,ASAX,ASLE,ASLN,ASND,ASNS,ASPI,ASPS,ASPU,ASRT,ASTE,ASTL,ASTR,ASTS,ASUR,ASYS,ATAI,ATEC,ATEN,ATEX,ATGN,ATHI,ATIF,ATKI,ATLC,ATLE,ATLO,ATNI,ATNM,ATPC,ATRA,ATRC,ATRI,ATRM,ATRS,ATSG,ATTO,ATVI,ATXG,ATXI,ATXS,ATYR,AUBN,AUCB,AUDC,AUGX,AUID,AUPH,AURC,AUTO,AUVI,AVAH,AVAV,AVDL,AVEO,AVGO,AVHI,AVID,AVIN,AVIR,AVNS,AVNT,AVNW,AVPT,AVRO,AVRX,AVTE,AVTR,AVTX,AVXL,AVYA,AXDX,AXGN,AXIL,AXLA,AXNX,AXON,AXSM,AXTA,AXTI,AY,AYTU,AZEK,AZTA,AZUL,AZYO,BAND,BANF,BANR,BASE,BATH,BAYA,BBCP,BBGI,BBIO,BBLG,BBSI,BCAB,BCBP,BCEL,BCLI,BCML,BCOV,BCPC,BCRX,BCSA,BCTX,BDGE,BDSX,BDTX,BEAM,BELF,BELFA,BELFB,BFC,BFIN,BFLY,BFRI,BGFV,BGNE,BGRY,BGSF,BHIL,BHVN,BIAF,BIER,BIGC,BIIB,BILI,BIMI,BIOL,BIOR,BIOX,BIRD,BIRK,BITE,BIVI,BJRI,BKCT,BKNG,BKSY,BKTI,BKUT,BLBD,BLBX,BLCO,BLDP,BLDR,BLFS,BLI,BLIN,BLKB,BLL,BLMN,BLND,BLNK,BLPH,BLRX,BLTE,BLTS,BLUE,BLUW,BLVD,BLZE,BMBL,BMEA,BMRN,BMTC,BNGO,BNNR,BNR,BNRG,BNST,BNTX,BOKF,BOOT,BORR,BOTJ,BOWL,BPMC,BPRN,BPTH,BQ,BRBR,BRDG,BRFS,BRID,BRLT,BROG,BROS,BRSP,BRTX,BRWM,BSFC,BSGM,BSIG,BSKL,BSRR,BSVN,BTAI,BTBT,BTCS,BTDR,BTMD,BTTX,BTWN,BURL,BUSE,BWB,BWFG,BWMN,BWV,BXRX,BYFC,BYND,BYRN,BYSI,BZFD,CALB,CALM,CALT,CAMT,CARE,CARG,CARM,CARR,CARS,CARV,CASA,CASH,CASI,CASS,CATO,CATX,CAVA,CBAN,CBAT,CBFV,CBIO,CBL,CBMB,CBMG,CBNK,CBPO,CBRL,CBSH,CBST,CBTX,CBUS,CCAP,CCCC,CCCS,CCF,CCFN,CCLD,CCM,CCNE,CCNX,CCRN,CCSI,CCTS,CCXI,CDAK,CDLX,CDMO,CDNA,CDNS,CDRE,CDTX,CDXC,CDXS,CDZI,CECO,CELU,CENT,CENTA,CENX,CERT,CEVA,CFFE,CFFI,CFFN,CFG,CFLT,CFNB,CFRX,CGBD,CGEM,CGEN,CGNT,CGON,CGTX,CHCI,CHCO,CHDN,CHEF,CHEK,CHGG,CHKP,CHMG,CHMI,CHNG,CHPT,CHRA,CHRS,CHTR,CHUY,CIFR,CIGI,CIK,CINF,CION,CIVB,CIZN,CJJD,CLBT,CLDX,CLFD,CLGN,CLIR,CLMT,CLNE,CLNN,CLOT,CLPS,CLPT,CLRB,CLRO,CLSD,CLSK,CLST,CLTL,CLVS,CLXT,CMBM,CMCO,CMCX,CMDX,CMLS,CMMB,CMPO,CMPR,CMPS,CMRE,CMRX,CMTG,CNCE,CNCX,CNDT,CNFR,CNIW,CNMD,CNNB,CNO,CNOB,CNSL,CNSP,CNTA,CNTG,CNTY,CNVY,CNXN,CODA,CODE,CODX,COFS,COGT,COHN,COHU,COKE,COLB,COLL,COLM,COMM,COMP,COMS,CONN,COOP,CORE,CORT,COSM,COSS,COTY,COUP,CPAY,CPHC,CPIX,CPKA,CPLG,CPOP,CPRT,CPRX,CPSH,CPTA,CPTN,CQP,CRAI,CRBP,CRBU,CRDF,CRDO,CRDX,CREV,CRGE,CRGX,CRGY,CRMT,CRNC,CRNX,CROC,CROX,CRSP,CRSS,CRST,CRUS,CRVO,CRWD,CRWS,CSBR,CSCO,CSGP,CSGS,CSII,CSIQ,CSLM,CSSE,CSTE,CSTL,CSTR,CTBI,CTGO,CTHR,CTIB,CTLP,CTMX,CTND,CTSO,CTVA,CTXS,CUEN,CULP,CURI,CURV,CUTR,CVBF,CVCO,CVET,CVGW,CVLG,CVLY,CVNX,CVOR,CVRX,CVSA,CVSG,CVSI,CWCO,CWEN,CWGL,CWST,CXDO,CXSE,CYBE,CYCN,CYTO,CZFS,DADA,DAIO,DAKT,DALI,DARE,DASH,DATS,DAWN,DBGI,DBX,DCFC,DCGO,DCOM,DCPH,DCRB,DDOG,DENN,DFIN,DGICA,DGII,DGIO,DGNU,DGRW,DGTI,DIBS,DINO,DIOD,DJCO,DKNG,DLHC,DLPN,DLX,DMLP,DMRC,DMTK,DNAA,DNAB,DNAC,DNAY,DNLI,DNMR,DOMO,DOOO,DORM,DOUG,DPRO,DPSN,DQST,DRCT,DRIO,DRIV,DRRX,DRTS,DRVN,DSAQ,DSCP,DSGX,DSKE,DSTI,DTIL,DTSS,DUOT,DURX,DVCR,DVNI,DVSA,DWSN,DXF,DXPE,DXYN,DYAI,DYNS,DYNT,EAST,EBON,EBSB,ECDA,ECPG,ECVT,EDBL,EDGW,EDIT,EDRY,EDTK,EDUC,EEIQ,EGIO,EGRX,ELTK,ELVN,EMBC,EMCF,EMLD,EMMS,EMPR,EMSG,ENDP,ENGI,ENOB,ENOV,ENPH,ENSG,ENTX,ENVB,ENVX,ENXS,EOSS,EPIX,EPOW,EPRT,EQBK,EQRX,ERAS,ERIC,ERII,ERNA,EROS,ESAB,ESBA,ESEA,ESLT,ESOA,ESPR,ESRT,ESSA,ESTA,ESTC,ESXB,ETNB,ETON,ETRN".split(",");
+ // S&P 500 is subset
 const EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,RAND.AS,ABN.AS,NN.AS,SAP.DE,SIE.DE,ALV.DE,MUV2.DE,DTE.DE,BAYN.DE,BMW.DE,VOW3.DE,MBG.DE,DB1.DE,BAS.DE,EOAN.DE,RWE.DE,HEN3.DE,IFX.DE,ADS.DE,CON.DE,MTX.DE,SHL.DE,ZAL.DE,MC.PA,OR.PA,TTE.PA,SAN.PA,AIR.PA,BNP.PA,ACA.PA,SGO.PA,DG.PA,RI.PA,CS.PA,ML.PA,VIE.PA,GLE.PA,HO.PA,EN.PA,CAP.PA,EL.PA,RMS.PA,KER.PA,NESN.SW,NOVN.SW,ROG.SW,ZURN.SW,ABBN.SW,SREN.SW,LONN.SW,GIVN.SW,SCMN.SW,AZN.L,HSBA.L,BP.L,RIO.L,ULVR.L,GSK.L,DGE.L,REL.L,BT.A.L,LLOY.L,VOD.L,PRU.L,STAN.L,NG.L,SSE.L,IAG.L,CPG.L,IMB.L,BA.L,CNA.L,SAN.MC,ITX.MC,BBVA.MC,TEF.MC,IBE.MC,FER.MC,REP.MC,ACS.MC,ACX.MC,MAP.MC,RACE.MI,ENI.MI,ENEL.MI,ISP.MI,UCG.MI,G.MI,LDO.MI,PRY.MI,MB.MI,NOVO-B.CO,MAERSK-B.CO,DSV.CO,ORSTED.CO,COLO-B.CO,ERIC-B.ST,VOLV-B.ST,HM-B.ST,SEB-A.ST,NOKIA.HE,FORTUM.HE,SAMPO.HE,ADEN.SW,SIKA.SW,SGS.SW,KBC.BR,UCB.BR,SOLB.BR,ABI.BR,CRH.IR".split(',');
 
 /* ═══ CRITERIA ═══ */
 const CRITERIA = [
   { id:'c6', label:'High short interest', diff:'hard', desc:'Short % of float > 5%',
     score: d => d.shortPct != null ? { pass: d.shortPct > 0.05, val:`Short: ${(d.shortPct*100).toFixed(1)}%` } : null },
-  { id:'c3', label:'Buyback signal', diff:'hard', desc:'Shares repurchased YoY',
-    score: d => d.buyback != null ? { pass: d.buyback > 0, val:`Repurchased: $${fmtNum(d.buyback)}` } : null },
-  { id:'c8', label:'P/FCF below 5yr avg', diff:'hard', desc:'Fwd PE < 85% of 5yr trailing PE avg',
-    score: d => (d.fwdPE != null && d.pe5yr != null) ? { pass: d.fwdPE < d.pe5yr * 0.85, val:`Fwd: ${d.fwdPE.toFixed(1)}x / 5yr: ${d.pe5yr.toFixed(1)}x` } : null },
-  { id:'c11', label:'Revenue growing', diff:'med', desc:'Revenue YoY growth > 0%',
-    score: d => d.revGrowth != null ? { pass: d.revGrowth > 0, val:`Rev YoY: ${(d.revGrowth*100).toFixed(1)}%` } : null },
-  { id:'c4', label:'Strong fundamentals', diff:'med', desc:'Positive OCF & profit margin > 5%',
-    score: d => (d.ocf != null && d.margin != null) ? { pass: d.ocf > 0 && d.margin > 0.05, val:`OCF: ${d.ocf>0?'+':'-'} · Margin: ${(d.margin*100).toFixed(1)}%` } : null },
+  { id:'c3', label:'Buyback / Low P/FCF', diff:'hard', desc:'P/FCF < 20 (buyback-friendly valuation)',
+    score: d => d.pfcf != null ? { pass: d.pfcf > 0 && d.pfcf < 20, val:`P/FCF: ${d.pfcf.toFixed(1)}x` } : null },
+  { id:'c8', label:'P/E compressed', diff:'hard', desc:'Forward P/E < 15x (historically cheap)',
+    score: d => d.fwdPE != null ? { pass: d.fwdPE > 0 && d.fwdPE < 15, val:`P/E: ${d.fwdPE.toFixed(1)}x` } : null },
+  { id:'c11', label:'Revenue growing', diff:'med', desc:'Sales Q/Q growth > 0%',
+    score: d => d.revGrowth != null ? { pass: d.revGrowth > 0, val:`Sales Q/Q: ${(d.revGrowth*100).toFixed(1)}%` } : null },
+  { id:'c4', label:'Strong fundamentals', diff:'med', desc:'Profit margin > 5%',
+    score: d => d.profitMargin != null ? { pass: d.profitMargin > 0.05, val:`Profit margin: ${(d.profitMargin*100).toFixed(1)}%` } : null },
   { id:'c9', label:'Earnings ≤ 30 days', diff:'med', desc:'Next earnings within 30 days',
     score: d => d.nextEarnings ? (() => { const days=Math.round((new Date(d.nextEarnings)-Date.now())/86400000); return {pass:days>=0&&days<=30,val:days>=0?`In ${days}d`:`${Math.abs(days)}d ago`}; })() : null },
   { id:'c1', label:'Near 52-week low', diff:'easy', desc:'Price within 20% of 52wk low',
@@ -362,10 +362,10 @@ const getCache = () => { try { return JSON.parse(localStorage.getItem('sbc')||'{
 const setCache = c => { try { localStorage.setItem('sbc', JSON.stringify(c)); } catch(e){} };
 const getWL = () => { try { return JSON.parse(localStorage.getItem('sbw')||'[]'); } catch(e){return[];} };
 const setWL = w => { try { localStorage.setItem('sbw', JSON.stringify(w)); } catch(e){} };
-const getWorker = () => localStorage.getItem('sbworker')||'';
+const getWorker = () => localStorage.getItem('sbworker') || 'https://screener-proxy.philippeaichomier.workers.dev';
 const setWorker = u => localStorage.setItem('sbworker', u);
 const fmtNum = n => n >= 1e9 ? (n/1e9).toFixed(1)+'B' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n.toFixed(0);
-const list = () => market==='us' ? RUSSELL1000 : EURO;
+const list = () => market==='us' ? RUSSELL2000 : EURO;
 
 /* ═══ INIT ═══ */
 window.onload = () => {
@@ -373,6 +373,7 @@ window.onload = () => {
   updateThresh();
   const w = getWorker();
   if(w) document.getElementById('worker-url').value = w;
+
   refreshCacheStatus();
   refreshWL();
   updateWLBadge();
@@ -394,7 +395,7 @@ function setMarket(m) {
   document.getElementById('mpill-eu').className = 'mpill'+(m==='eu'?' eu-on':'');
   document.getElementById('universe-lbl').textContent = m==='us'?`S&P 500 · ${SP500.length} stocks`:`Euro Stoxx · ${EURO.length} stocks`;
   document.getElementById('run-btn').className = 'btn-run '+m;
-  document.getElementById('run-btn').textContent = m==='us'?'Run full Russell 1000 scan':'Run full Euro Stoxx scan';
+  document.getElementById('run-btn').textContent = m==='us'?'Run full Russell 2000 scan':'Run full Euro Stoxx scan';
   document.getElementById('empty-msg').textContent = 'Set up your Worker URL, then run a scan.';
   document.getElementById('right-col').innerHTML = `<div class="empty"><div class="ei">◎</div><p id="empty-msg">Set up your Worker URL, then run a scan.</p></div>`;
   document.querySelectorAll('.nav-tab.active,.nav-tab.active-eu').forEach(t=>{t.classList.remove('active','active-eu');t.classList.add(m==='eu'?'active-eu':'active');});
@@ -483,14 +484,28 @@ async function saveAndPing() {
 }
 
 /* ═══ FETCH via Worker ═══ */
-async function workerFetch(action, symbols='') {
+async function workerFetch(action, symbols='', sheetUrl='') {
   const base = getWorker();
   if(!base) throw new Error('No Worker URL set. Paste it in API Setup above.');
-  const url = `${base}?action=${action}${symbols?'&symbols='+encodeURIComponent(symbols):''}`;
+  let url = `${base}?action=${action}`;
+  if(symbols) url += '&symbols=' + encodeURIComponent(symbols);
+  if(sheetUrl) url += '&sheet=' + encodeURIComponent(sheetUrl);
   const r = await fetch(url, {signal: AbortSignal.timeout(30000)});
   if(!r.ok) throw new Error(`Worker returned HTTP ${r.status}`);
   return r.json();
 }
+
+async function workerFetchAV(symbol, avKey) {
+  const base = getWorker();
+  if(!base) throw new Error('No Worker URL set.');
+  const url = base + '?action=av&symbols=' + symbol + '&avkey=' + avKey;
+  const r = await fetch(url, {signal: AbortSignal.timeout(15000)});
+  if(!r.ok) return null;
+  return r.json();
+}
+
+function saveSheet() {}
+function saveAV() {}
 
 /* ═══ SCAN ENGINE ═══ */
 async function startScan() {
@@ -500,7 +515,7 @@ async function startScan() {
   document.getElementById('run-btn').textContent = '⏹ Cancel';
   await runScan(list(), false);
   scanning = false;
-  document.getElementById('run-btn').textContent = market==='us'?'Run full Russell 1000 scan':'Run full Euro Stoxx scan';
+  document.getElementById('run-btn').textContent = market==='us'?'Run full Russell 2000 scan':'Run full Euro Stoxx scan';
 }
 
 async function startDelta() {
@@ -579,141 +594,87 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     log(`Fetching ${needFetch.length} stocks from Yahoo Finance…`, 'active');
   }
 
-  // ── PHASE 1: Bulk quotes (price, PE, 52wk, shares) ──
-  if(needFetch.length > 0 && scanning) {
-    const line = log('Phase 1/5: Quotes (price, PE, 52wk low)…', 'active');
-    try {
-      const CHUNK = 100;
-      for(let i=0; i<needFetch.length; i+=CHUNK) {
-        if(!scanning) break;
-        const chunk = needFetch.slice(i, i+CHUNK);
-        const data = await workerFetch('quotes', chunk.join(','));
-        chunk.forEach(t => {
-          const q = data[t];
-          if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
-          if(q) {
-            stockData[t].price = q.regularMarketPrice ?? q.price;
-            stockData[t].low52 = q.fiftyTwoWeekLow ?? q.yearLow;
-            stockData[t].high52 = q.fiftyTwoWeekHigh ?? q.yearHigh;
-            stockData[t].fwdPE = q.forwardPE ?? q.trailingPE;
-            stockData[t].trailPE = q.trailingPE;
-            stockData[t].sharesOut = q.sharesOutstanding ?? q.floatShares;
-            stockData[t].companyName = q.shortName ?? q.longName ?? q.name;
-            stockData[t].exchange = q.exchangeShortName ?? q.exchange;
-            stockData[t].shortPct = q.shortPercentOfFloat ?? null; // grab while we have it
-          }
-        });
-        const pct = Math.round((i+chunk.length)/needFetch.length*100);
-        setPhase(0, pct, `${Math.min(i+CHUNK, needFetch.length)}/${needFetch.length}`);
-        setProg(Math.round(pct*0.2));
-      }
-      line.className='pline done'; line.querySelector('.pdot').className='pdot d';
-      log('Quotes loaded.','done');
-    } catch(e) { log('Quote fetch error: '+e.message,'err'); }
-  }
-  setPhase(0, 100, '✓'); setProg(20);
-
-  // ── PHASE 2: Fundamentals (income + cashflow) ──
-  if(needFetch.length > 0 && scanning) {
-    const line = log('Phase 2/5: Fundamentals (revenue, OCF, buybacks)…','active');
-    try {
-      const CHUNK = 20;
-      for(let i=0; i<needFetch.length; i+=CHUNK) {
-        if(!scanning) break;
-        const chunk = needFetch.slice(i, i+CHUNK);
-        const data = await workerFetch('fundamentals', chunk.join(','));
-        chunk.forEach(t => {
-          const fd = data[t];
-          if(!fd) return;
-          if(!stockData[t]) stockData[t] = {critResults:{}, ts:Date.now()};
-          // Worker already processed these fields cleanly
-          if(fd.revGrowth != null) stockData[t].revGrowth = fd.revGrowth;
-          if(fd.margin != null) stockData[t].margin = fd.margin;
-          if(fd.ocf != null) stockData[t].ocf = fd.ocf;
-          if(fd.buyback != null) stockData[t].buyback = fd.buyback;
-          if(fd.freeCashFlow != null) stockData[t].fcf = fd.freeCashFlow;
-        });
-        setPhase(1, Math.round((i+chunk.length)/needFetch.length*100), `${Math.min(i+CHUNK,needFetch.length)}/${needFetch.length}`);
-        setProg(20+Math.round((i/needFetch.length)*20));
-      }
-      line.className='pline done'; line.querySelector('.pdot').className='pdot d';
-      log('Fundamentals loaded.','done');
-    } catch(e) { log('Fundamentals error: '+e.message,'err'); }
-  }
-  setPhase(1,100,'✓'); setProg(40);
-
-  // ── PHASE 3: Short interest ──
-  if(needFetch.length > 0 && scanning) {
-    const line = log('Phase 3/5: Short interest…','active');
-    try {
-      const CHUNK = 20;
-      for(let i=0; i<needFetch.length; i+=CHUNK) {
-        if(!scanning) break;
-        const chunk = needFetch.slice(i,i+CHUNK);
-        const data = await workerFetch('short', chunk.join(','));
-        chunk.forEach(t => {
-          const s = data[t];
-          if(!stockData[t]) stockData[t] = {critResults:{},ts:Date.now()};
-          if(s) stockData[t].shortPct = s.shortPct ?? null;
-          // Also try from quotes data already fetched
-          if(stockData[t].shortPct == null && stockData[t]._rawQuote) {
-            stockData[t].shortPct = stockData[t]._rawQuote.shortPercentOfFloat ?? null;
-          }
-        });
-        setPhase(2, Math.round((i+chunk.length)/needFetch.length*100), `${Math.min(i+CHUNK,needFetch.length)}/${needFetch.length}`);
-        setProg(40+Math.round((i/needFetch.length)*20));
-      }
-      line.className='pline done'; line.querySelector('.pdot').className='pdot d';
-      log('Short interest loaded.','done');
-    } catch(e) { log('Short interest error: '+e.message,'err'); }
-  }
-  setPhase(2,100,'✓'); setProg(60);
-
-  // ── PHASE 4: Earnings calendar ──
+  // ── PHASE 1: Load Google Sheet data (price, 52wk low/high, PE) ──
+  const sheetUrl = 'configured';
   if(scanning) {
-    const line = log('Phase 4/5: Earnings calendar…','active');
+    const line = log('Phase 1: Loading Google Sheet data…', 'active');
     try {
-      const allSyms = Object.keys(stockData);
-      const earningsMap = await workerFetch('earnings', allSyms.join(','));
-      Object.keys(stockData).forEach(t => {
-        if(earningsMap[t]) stockData[t].nextEarnings = earningsMap[t];
+      const sheetData = await workerFetch('sheet', '', sheetUrl);
+      const allTickers = list();
+      allTickers.forEach(t => {
+        const d = sheetData[t];
+        if(!d) return;
+        if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
+        stockData[t].price = d.price;
+        stockData[t].low52 = d.low52;
+        stockData[t].high52 = d.high52;
+        stockData[t].pe = d.pe;
+        stockData[t].fwdPE = d.pe;
+        stockData[t].companyName = d.name;
       });
-      setPhase(3,100,'✓');
+      const loaded = Object.keys(sheetData).length;
+      setPhase(0, 100, loaded + ' stocks');
       line.className='pline done'; line.querySelector('.pdot').className='pdot d';
-      log('Earnings calendar loaded.','done');
-    } catch(e) { log('Earnings error: '+e.message,'err'); }
+      log('Google Sheet: ' + loaded + ' stocks loaded.', 'done');
+    } catch(e) { log('Sheet error: ' + e.message, 'err'); }
   }
-  setProg(75);
+  setProg(20);
 
-  // ── PHASE 5: Key metrics (PE history for P/FCF criterion) ──
-  if(needFetch.length > 0 && scanning) {
-    const line = log('Phase 5/5: Historical PE metrics…','active');
-    try {
-      const CHUNK = 15;
-      for(let i=0; i<needFetch.length; i+=CHUNK) {
-        if(!scanning) break;
-        const chunk = needFetch.slice(i,i+CHUNK);
-        const data = await workerFetch('metrics', chunk.join(','));
-        chunk.forEach(t => {
-          const m = data[t];
-          if(!m) return;
-          if(!stockData[t]) stockData[t]={critResults:{},ts:Date.now()};
-          // Yahoo returns single object, not array
-          const trailPE = m.trailingPE ?? stockData[t].trailPE;
-          const fwdPE = m.forwardPE ?? stockData[t].fwdPE;
-          // 5yr PE proxy: use trailing PE * 1.2 as historical average (conservative)
-          stockData[t].pe5yr = trailPE ? trailPE * 1.2 : null;
-          if(fwdPE) stockData[t].fwdPE = fwdPE;
-          if(trailPE) stockData[t].trailPE = trailPE;
-        });
-        setPhase(4, Math.round((i+chunk.length)/needFetch.length*100), `${Math.min(i+CHUNK,needFetch.length)}/${needFetch.length}`);
-        setProg(75+Math.round((i/needFetch.length)*20));
+  // ── PHASE 2: Pre-filter — only fetch AV data for stocks near 52wk low ──
+  // This saves API calls — only stocks within 25% of 52wk low get full AV data
+  const avKey = 'VREMNI755NX1LKE7';
+  const candidates = needFetch.filter(t => {
+    const d = stockData[t];
+    if(!d || !d.price || !d.low52) return true; // no sheet data, include anyway
+    return (d.price - d.low52) / d.low52 <= 0.25; // within 25% of 52wk low
+  });
+  log('Pre-filter: ' + candidates.length + ' of ' + needFetch.length + ' stocks within 25% of 52wk low', 'active');
+  setPhase(1, 100, candidates.length + '/' + needFetch.length);
+  setProg(35);
+
+  // ── PHASE 3: Alpha Vantage — fetch fundamentals for candidates ──
+  if(avKey && candidates.length > 0 && scanning) {
+    const line = log('Phase 3: Alpha Vantage fundamentals (' + candidates.length + ' stocks, 25/day limit)…', 'active');
+    const CHUNK = 1; // AV requires one at a time
+    let fetched = 0;
+    for(let i=0; i<candidates.length; i++) {
+      if(!scanning) break;
+      const t = candidates[i];
+      // Skip if already cached with AV data
+      if(mCache[t] && mCache[t].profitMargin != null) {
+        fetched++;
+        continue;
       }
-      line.className='pline done'; line.querySelector('.pdot').className='pdot d';
-      log('Metrics loaded.','done');
-    } catch(e) { log('Metrics error: '+e.message,'err'); }
+      try {
+        const data = await workerFetchAV(t, avKey);
+        if(data && data.symbol) {
+          if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
+          stockData[t].profitMargin = data.profitMargin;
+          stockData[t].revGrowth = data.revenueGrowthYOY;
+          stockData[t].shortPct = data.shortPct;
+          stockData[t].pfcf = data.priceToFreeCashFlow;
+          stockData[t].fwdPE = data.forwardPE || data.peRatio || stockData[t].fwdPE;
+          stockData[t].companyName = stockData[t].companyName || data.name;
+          if(data.week52Low) stockData[t].low52 = data.week52Low;
+        }
+        fetched++;
+      } catch(e) {}
+      const pct = Math.round(fetched / candidates.length * 100);
+      setPhase(2, pct, fetched + '/' + candidates.length);
+      setProg(35 + Math.round(pct * 0.55));
+      // AV rate limit: 5 calls/min on free tier — wait 12s between calls
+      if(i < candidates.length - 1) await new Promise(r => setTimeout(r, 12000));
+    }
+    line.className='pline done'; line.querySelector('.pdot').className='pdot d';
+    log('Alpha Vantage: ' + fetched + ' stocks fetched.', 'done');
+  } else if(!avKey) {
+    log('⚠ No Alpha Vantage key — fundamental criteria will use sheet data only.', 'active');
+    setPhase(2, 100, 'skipped');
   }
-  setPhase(4,100,'✓'); setProg(95);
+
+  // Fill remaining phase bars
+  for(let pi=3;pi<5;pi++) setPhase(pi,100,'✓');
+  setProg(95);
 
   // ── SAVE TO CACHE ──
   Object.keys(stockData).forEach(t => { mCache[t] = stockData[t]; });
