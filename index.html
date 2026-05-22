@@ -240,7 +240,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 
       <!-- Universe + Market -->
       <div class="panel">
-        <div class="ph"><span class="ph-title">Universe</span><span id="universe-lbl" style="font-size:11px;color:var(--muted)">S&amp;P 500 · 503 stocks</span></div>
+        <div class="ph"><span class="ph-title">Universe</span><span id="universe-lbl" style="font-size:11px;color:var(--muted)">Russell 1000 · 1000 stocks</span></div>
         <div class="pb">
           <div class="mpills">
             <button class="mpill us-on" id="mpill-us" onclick="setMarket('us')"><span class="fl">🇺🇸</span> US Markets</button>
@@ -273,7 +273,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
         </div>
       </div>
 
-      <button class="btn-run us" id="run-btn" onclick="startScan()">Run full S&amp;P 500 scan</button>
+      <button class="btn-run us" id="run-btn" onclick="startScan()">Run full Russell 1000 scan</button>
       <button class="btn-sec" id="delta-btn" onclick="startDelta()" style="display:none">↑ Re-scan: new stocks only</button>
       <button class="btn-sec" onclick="clearCache()" id="clear-btn" style="display:none">Clear cache &amp; reset</button>
     </div>
@@ -331,7 +331,8 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 
 <script>
 /* ═══ TICKERS ═══ */
-const SP500 = "MMM,AOS,ABT,ABBV,ACN,ADBE,AMD,AES,AFL,A,APD,ABNB,AKAM,ALB,ARE,ALGN,ALLE,LNT,ALL,GOOGL,GOOG,MO,AMZN,AMCR,AEE,AAL,AEP,AXP,AIG,AMT,AWK,AMP,AME,AMGN,APH,ADI,ANSS,AON,APA,AAPL,AMAT,APTV,ACGL,ADM,ANET,AJG,AIZ,T,ATO,ADSK,AZO,AVB,AVY,AXON,BKR,BALL,BAC,BAX,BDX,BRK.B,BBY,BIO,BIIB,BLK,BK,BA,BKNG,BWA,BSX,BMY,AVGO,BR,BRO,BF.B,BLDR,BG,CDNS,CZR,CPT,CPB,COF,CAH,KMX,CCL,CARR,CTLT,CAT,CBOE,CBRE,CDW,CE,COR,CNC,CNX,CDAY,CF,CRL,SCHW,CHTR,CVX,CMG,CB,CHD,CI,CINF,CTAS,CSCO,C,CFG,CLX,CME,CMS,KO,CTSH,CL,CMCSA,CAG,COP,ED,STZ,CEG,COO,CPRT,GLW,CPAY,CTVA,CSGP,COST,CTRA,CRWD,CCI,CSX,CMI,CVS,DHR,DRI,DVA,DAY,DECK,DE,DELL,DAL,DVN,DXCM,FANG,DLR,DFS,DG,DLTR,D,DPZ,DOV,DOW,DHI,DTE,DUK,DD,EMN,ETN,EBAY,ECL,EIX,EW,EA,ELV,EMR,ENPH,ETR,EOG,EPAM,EQT,EFX,EQIX,EQR,ESS,EL,ETSY,EG,EVRG,ES,EXC,EXPE,EXPD,EXR,XOM,FFIV,FDS,FICO,FAST,FRT,FDX,FIS,FITB,FSLR,FE,FI,FMC,F,FTNT,FTV,FOXA,FOX,BEN,FCX,GRMN,IT,GE,GEHC,GEV,GEN,GNRC,GD,GIS,GM,GPC,GILD,GPN,GL,GDDY,GS,HAL,HIG,HAS,HCA,DOC,HSIC,HSY,HES,HPE,HLT,HOLX,HD,HON,HRL,HST,HWM,HPQ,HUBB,HUM,HBAN,HII,IBM,IEX,IDXX,ITW,INCY,IR,PODD,INTC,ICE,IFF,IP,IPG,INTU,ISRG,IVZ,INVH,IQV,IRM,JKHY,J,JBL,JPM,K,KVUE,KDP,KEY,KEYS,KMB,KIM,KMI,KLAC,KHC,KR,LHX,LH,LRCX,LW,LVS,LDOS,LEN,LLY,LIN,LYV,LKQ,LMT,L,LOW,LULU,LYB,MTB,MRO,MPC,MKTX,MAR,MMC,MLM,MAS,MA,MTCH,MKC,MCD,MCK,MDT,MRK,META,MET,MTD,MGM,MCHP,MU,MSFT,MAA,MRNA,MHK,MOH,TAP,MDLZ,MPWR,MNST,MCO,MS,MOS,MSI,MSCI,NDAQ,NTAP,NFLX,NEM,NWSA,NWS,NEE,NKE,NI,NDSN,NSC,NTRS,NOC,NCLH,NRG,NUE,NVDA,NVR,NXPI,ORLY,OXY,ODFL,OMC,ON,OKE,ORCL,OTIS,PCAR,PKG,PANW,PH,PARA,PAYX,PYPL,PNR,PEP,PFE,PCG,PM,PSX,PNW,PNC,POOL,PPG,PPL,PFG,PG,PGR,PRU,PEG,PSTG,PTC,PSA,PHM,QRVO,PWR,QCOM,DGX,RL,RJF,RTX,O,REG,REGN,RF,RSG,RMD,RVTY,ROK,ROL,ROP,ROST,RCL,SPGI,CRM,SBAC,SLB,STX,SRE,NOW,SHW,SPG,SWKS,SJM,SNA,SOLV,SO,LUV,SWK,SBUX,STT,STLD,STE,SYK,SYF,SNPS,SYY,TMUS,TROW,TTWO,TPR,TRGP,TGT,TEL,TDY,TFX,TER,TSLA,TXN,TXT,TMO,TJX,TSCO,TT,TDG,TRV,TRMB,TFC,TYL,TSN,USB,UBER,UDR,UHS,UNP,UAL,UPS,URI,UNH,VLO,VTR,VRSN,VRSK,VZ,VRTX,VLTO,VMC,GWW,WAB,WBA,WMT,WBD,WM,WAT,WEC,WFC,WELL,WST,WDC,WY,WMB,WTW,WYNN,XEL,XYL,YUM,ZBRA,ZBH,ZTS".split(',');
+const RUSSELL1000 = "MMM,AOS,ABT,ABBV,ACN,ADBE,AMD,AES,AFL,A,APD,ABNB,AKAM,ALB,ARE,ALGN,ALLE,LNT,ALL,GOOGL,GOOG,MO,AMZN,AMCR,AEE,AAL,AEP,AXP,AIG,AMT,AWK,AMP,AME,AMGN,APH,ADI,ANSS,AON,APA,AAPL,AMAT,APTV,ACGL,ADM,ANET,AJG,AIZ,T,ATO,ADSK,AZO,AVB,AVY,AXON,BKR,BALL,BAC,BAX,BDX,BRK.B,BBY,BIO,BIIB,BLK,BK,BA,BKNG,BWA,BSX,BMY,AVGO,BR,BRO,BF.B,BLDR,BG,CDNS,CZR,CPT,CPB,COF,CAH,KMX,CCL,CARR,CTLT,CAT,CBOE,CBRE,CDW,CE,COR,CNC,CNX,CDAY,CF,CRL,SCHW,CHTR,CVX,CMG,CB,CHD,CI,CINF,CTAS,CSCO,C,CFG,CLX,CME,CMS,KO,CTSH,CL,CMCSA,CAG,COP,ED,STZ,CEG,COO,CPRT,GLW,CPAY,CTVA,CSGP,COST,CTRA,CRWD,CCI,CSX,CMI,CVS,DHR,DRI,DVA,DAY,DECK,DE,DELL,DAL,DVN,DXCM,FANG,DLR,DFS,DG,DLTR,D,DPZ,DOV,DOW,DHI,DTE,DUK,DD,EMN,ETN,EBAY,ECL,EIX,EW,EA,ELV,EMR,ENPH,ETR,EOG,EPAM,EQT,EFX,EQIX,EQR,ESS,EL,ETSY,EG,EVRG,ES,EXC,EXPE,EXPD,EXR,XOM,FFIV,FDS,FICO,FAST,FRT,FDX,FIS,FITB,FSLR,FE,FI,FMC,F,FTNT,FTV,FOXA,FOX,BEN,FCX,GRMN,IT,GE,GEHC,GEV,GEN,GNRC,GD,GIS,GM,GPC,GILD,GPN,GL,GDDY,GS,HAL,HIG,HAS,HCA,DOC,HSIC,HSY,HES,HPE,HLT,HOLX,HD,HON,HRL,HST,HWM,HPQ,HUBB,HUM,HBAN,HII,IBM,IEX,IDXX,ITW,INCY,IR,PODD,INTC,ICE,IFF,IP,IPG,INTU,ISRG,IVZ,INVH,IQV,IRM,JKHY,J,JBL,JPM,K,KVUE,KDP,KEY,KEYS,KMB,KIM,KMI,KLAC,KHC,KR,LHX,LH,LRCX,LW,LVS,LDOS,LEN,LLY,LIN,LYV,LKQ,LMT,L,LOW,LULU,LYB,MTB,MRO,MPC,MKTX,MAR,MMC,MLM,MAS,MA,MTCH,MKC,MCD,MCK,MDT,MRK,META,MET,MTD,MGM,MCHP,MU,MSFT,MAA,MRNA,MHK,MOH,TAP,MDLZ,MPWR,MNST,MCO,MS,MOS,MSI,MSCI,NDAQ,NTAP,NFLX,NEM,NWSA,NWS,NEE,NKE,NI,NDSN,NSC,NTRS,NOC,NCLH,NRG,NUE,NVDA,NVR,NXPI,ORLY,OXY,ODFL,OMC,ON,OKE,ORCL,OTIS,PCAR,PKG,PANW,PH,PARA,PAYX,PYPL,PNR,PEP,PFE,PCG,PM,PSX,PNW,PNC,POOL,PPG,PPL,PFG,PG,PGR,PRU,PEG,PSTG,PTC,PSA,PHM,QRVO,PWR,QCOM,DGX,RL,RJF,RTX,O,REG,REGN,RF,RSG,RMD,RVTY,ROK,ROL,ROP,ROST,RCL,SPGI,CRM,SBAC,SLB,STX,SRE,NOW,SHW,SPG,SWKS,SJM,SNA,SOLV,SO,LUV,SWK,SBUX,STT,STLD,STE,SYK,SYF,SNPS,SYY,TMUS,TROW,TTWO,TPR,TRGP,TGT,TEL,TDY,TFX,TER,TSLA,TXN,TXT,TMO,TJX,TSCO,TT,TDG,TRV,TRMB,TFC,TYL,TSN,USB,UBER,UDR,UHS,UNP,UAL,UPS,URI,UNH,VLO,VTR,VRSN,VRSK,VZ,VRTX,VLTO,VMC,GWW,WAB,WBA,WMT,WBD,WM,WAT,WEC,WFC,WELL,WST,WDC,WY,WMB,WTW,WYNN,XEL,XYL,YUM,ZBRA,ZBH,ZTS,ACHC,ACIW,ACM,ADNT,AEG,AEHR,AEIS,AFL,AGCO,AGR,AIG,AIR,AIT,AJG,AKAM,AL,ALG,ALGT,ALHC,ALKS,ALLE,ALNY,ALV,AM,AMBC,AMG,AMKR,AMN,AMPH,ANF,AOS,APA,APG,APPF,APPN,APPS,APT,APTI,ARES,AROC,ARW,ASH,ASTE,ATEC,ATMU,ATR,AUB,AVA,AVAV,AVNT,AWI,AX,AXS,AZEK,AZTA,BC,BCRX,BDC,BEN,BFAM,BG,BGC,BHE,BIRK,BJ,BKD,BKNG,BL,BLKB,BMS,BOH,BOX,BPOP,BRC,BRBR,BRX,BSIG,BURL,BWA,CABO,CALM,CARG,CARS,CASY,CBSH,CC,CCCS,CCK,CDK,CENTA,CENX,CERT,CG,CGC,CHDN,CHEF,CHH,CHX,CI,CLB,CLF,CLFD,CLH,CLX,CMC,CMEN,CNA,CNMD,CNXC,COHU,COKE,COLB,CONE,COOP,CORE,COTY,CPF,CPK,CPRX,CRC,CRGY,CRI,CRK,CRNX,CRS,CSGS,CSWI,CTRE,CUZ,CVBF,CVET,CWK,CWT,CXM,CYTK,DAR,DBD,DDS,DEI,DFIN,DG,DGX,DHX,DKS,DLB,DNOW,DORM,DRH,DRI,DT,DXC,DXPE,DY,EBC,EFC,EFX,EGP,ELAN,EME,ENOV,ENR,ENVA,EOG,EPC,EPRT,ESAB,ESNT,ESRT,ETRN,EVTC,EWBC,EXEL,EXP,EXPO,EXTR,FAF,FARO,FBP,FBNC,FCNCA,FCPT,FHB,FHN,FIX,FIZZ,FLDM,FLNC,FLS,FLT,FMC,FNDF,FNKO,FORM,FOXF,FPH,FR,FRPT,FUL,FULT,GATX,GEF,GHC,GMS,GNW,GOLF,GPK,GPI,GRBK,GXO,H,HAFC,HALO,HASI,HAYW,HBI,HCSG,HHC,HI,HIW,HLNE,HMST,HNI,HOMB,HPP,HQY,HR,HROW,HSII,HUN,HURN,HWKN,IBP,ICFI,IDCC,IDEX,IEX,INN,INSW,INTA,INTG,INVA,IPAR,IPGP,IRT,ITT,JACK,JBGS,JBHT,JELD,JHG,JJSF,JLL,JOE,JOBY,JOUT,KAI,KBH,KBR,KFRC,KMT,KNF,KNX,KNTK,KOF,KOP,KRC,KRYS,KTB,KWR,LANC,LAUR,LBRT,LCI,LDI,LEA,LECO,LGIH,LII,LKFN,LMB,LNC,LNW,LOPE,LSTR,LTC,LXP,M,MARA,MBC,MBWM,MC,MCY,MDU,MGEE,MGNX,MGPI,MLI,MLKN,MMI,MMSI,MMS,MNKD,MOG.A,MPW,MRCY,MRC,MSGE,MSGS,MTH,MTN,MTX,MUR,NARI,NBR,NBTB,NCR,NEP,NFBK,NHC,NHI,NJR,NNN,NOVT,NPO,NRC,NRG,NSA,NTRA,NUE,NVCR,NVT,NWE,NWL,NXST,NYMT,OBK,OC,OFC,OFG,OGE,OGS,OHI,OII,OLLI,OLPX,OMF,ONB,ORA,ORLY,OTIS,OUT,OXM,PATK,PAX,PAYC,PAYO,PBCT,PBFS,PBH,PCAR,PCH,PEN,PENN,PFSI,PGC,PGTK,PINC,PIPR,PLAY,PLMR,PLXS,PNM,PODD,POOL,POST,POWL,PRG,PRGS,PRGO,PRIM,PRK,PRVA,PSB,PTCT,PVH,PVTL,QCR,QLYS,QNST,RBC,RCM,RDNT,RES,REX,RFNB,RHP,RIG,RLI,RMBS,RMD,ROAD,ROG,RPAI,RPM,RRX,RSG,RUSHA,RXO,SAFE,SBCF,SBH,SBOW,SBRA,SBUX,SCL,SCSC,SEIC,SF,SFM,SGBX,SHAK,SIGI,SIG,SITC,SITE,SJW,SKYW,SLG,SM,SMPL,SNEX,SNV,SONO,SPB,SPNT,SSD,STC,STEP,STRL,SUM,SWN,SXI,SXT,SYNA,TALO,TBBK,TBI,TCBK,TGNA,TILE,TKR,TMHC,TNET,TNL,TPVG,TRGP,TRIP,TRS,TRST,TRUP,TRVG,TTC,TTEC,TTM,TUYA,TW,TWI,TXRH,TYL,UCBI,UE,UFCS,UFP,UGI,UMBF,UMH,UNF,UNVR,UVV,VBTX,VC,VFC,VGR,VHC,VLY,VMI,VNDA,VNO,VRTS,VSH,VSTO,VVV,WABC,WAL,WASH,WBS,WD,WEN,WEX,WHD,WMS,WOR,WPC,WPCGY,WRB,WSO,WTS,WTTR,WU,WWW,XRX,XRAY,Y,YETI,YORW,ZBH,ZI,ZUO".split(',');
+const SP500 = RUSSELL1000.slice(0, 503); // S&P 500 is subset
 const EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,RAND.AS,ABN.AS,NN.AS,SAP.DE,SIE.DE,ALV.DE,MUV2.DE,DTE.DE,BAYN.DE,BMW.DE,VOW3.DE,MBG.DE,DB1.DE,BAS.DE,EOAN.DE,RWE.DE,HEN3.DE,IFX.DE,ADS.DE,CON.DE,MTX.DE,SHL.DE,ZAL.DE,MC.PA,OR.PA,TTE.PA,SAN.PA,AIR.PA,BNP.PA,ACA.PA,SGO.PA,DG.PA,RI.PA,CS.PA,ML.PA,VIE.PA,GLE.PA,HO.PA,EN.PA,CAP.PA,EL.PA,RMS.PA,KER.PA,NESN.SW,NOVN.SW,ROG.SW,ZURN.SW,ABBN.SW,SREN.SW,LONN.SW,GIVN.SW,SCMN.SW,AZN.L,HSBA.L,BP.L,RIO.L,ULVR.L,GSK.L,DGE.L,REL.L,BT.A.L,LLOY.L,VOD.L,PRU.L,STAN.L,NG.L,SSE.L,IAG.L,CPG.L,IMB.L,BA.L,CNA.L,SAN.MC,ITX.MC,BBVA.MC,TEF.MC,IBE.MC,FER.MC,REP.MC,ACS.MC,ACX.MC,MAP.MC,RACE.MI,ENI.MI,ENEL.MI,ISP.MI,UCG.MI,G.MI,LDO.MI,PRY.MI,MB.MI,NOVO-B.CO,MAERSK-B.CO,DSV.CO,ORSTED.CO,COLO-B.CO,ERIC-B.ST,VOLV-B.ST,HM-B.ST,SEB-A.ST,NOKIA.HE,FORTUM.HE,SAMPO.HE,ADEN.SW,SIKA.SW,SGS.SW,KBC.BR,UCB.BR,SOLB.BR,ABI.BR,CRH.IR".split(',');
 
 /* ═══ CRITERIA ═══ */
@@ -364,7 +365,7 @@ const setWL = w => { try { localStorage.setItem('sbw', JSON.stringify(w)); } cat
 const getWorker = () => localStorage.getItem('sbworker')||'';
 const setWorker = u => localStorage.setItem('sbworker', u);
 const fmtNum = n => n >= 1e9 ? (n/1e9).toFixed(1)+'B' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n.toFixed(0);
-const list = () => market==='us' ? SP500 : EURO;
+const list = () => market==='us' ? RUSSELL1000 : EURO;
 
 /* ═══ INIT ═══ */
 window.onload = () => {
@@ -393,7 +394,7 @@ function setMarket(m) {
   document.getElementById('mpill-eu').className = 'mpill'+(m==='eu'?' eu-on':'');
   document.getElementById('universe-lbl').textContent = m==='us'?`S&P 500 · ${SP500.length} stocks`:`Euro Stoxx · ${EURO.length} stocks`;
   document.getElementById('run-btn').className = 'btn-run '+m;
-  document.getElementById('run-btn').textContent = m==='us'?'Run full S&P 500 scan':'Run full Euro Stoxx scan';
+  document.getElementById('run-btn').textContent = m==='us'?'Run full Russell 1000 scan':'Run full Euro Stoxx scan';
   document.getElementById('empty-msg').textContent = 'Set up your Worker URL, then run a scan.';
   document.getElementById('right-col').innerHTML = `<div class="empty"><div class="ei">◎</div><p id="empty-msg">Set up your Worker URL, then run a scan.</p></div>`;
   document.querySelectorAll('.nav-tab.active,.nav-tab.active-eu').forEach(t=>{t.classList.remove('active','active-eu');t.classList.add(m==='eu'?'active-eu':'active');});
@@ -499,7 +500,7 @@ async function startScan() {
   document.getElementById('run-btn').textContent = '⏹ Cancel';
   await runScan(list(), false);
   scanning = false;
-  document.getElementById('run-btn').textContent = market==='us'?'Run full S&P 500 scan':'Run full Euro Stoxx scan';
+  document.getElementById('run-btn').textContent = market==='us'?'Run full Russell 1000 scan':'Run full Euro Stoxx scan';
 }
 
 async function startDelta() {
@@ -575,7 +576,7 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   if(needFetch.length === 0) {
     log('All data loaded from cache.', 'done');
   } else {
-    log(`Fetching ${needFetch.length} stocks from FMP…`, 'active');
+    log(`Fetching ${needFetch.length} stocks from Yahoo Finance…`, 'active');
   }
 
   // ── PHASE 1: Bulk quotes (price, PE, 52wk, shares) ──
@@ -591,14 +592,15 @@ async function runScan(tickers, isDelta, prevWL=[]) {
           const q = data[t];
           if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
           if(q) {
-            stockData[t].price = q.price;
-            stockData[t].low52 = q.yearLow;
-            stockData[t].high52 = q.yearHigh;
-            stockData[t].fwdPE = q.priceEpsEstimatePreviousYear || q.pe;
-            stockData[t].trailPE = q.pe;
-            stockData[t].sharesOut = q.sharesOutstanding;
-            stockData[t].companyName = q.name;
-            stockData[t].exchange = q.exchange;
+            stockData[t].price = q.regularMarketPrice ?? q.price;
+            stockData[t].low52 = q.fiftyTwoWeekLow ?? q.yearLow;
+            stockData[t].high52 = q.fiftyTwoWeekHigh ?? q.yearHigh;
+            stockData[t].fwdPE = q.forwardPE ?? q.trailingPE;
+            stockData[t].trailPE = q.trailingPE;
+            stockData[t].sharesOut = q.sharesOutstanding ?? q.floatShares;
+            stockData[t].companyName = q.shortName ?? q.longName ?? q.name;
+            stockData[t].exchange = q.exchangeShortName ?? q.exchange;
+            stockData[t].shortPct = q.shortPercentOfFloat ?? null; // grab while we have it
           }
         });
         const pct = Math.round((i+chunk.length)/needFetch.length*100);
@@ -624,21 +626,12 @@ async function runScan(tickers, isDelta, prevWL=[]) {
           const fd = data[t];
           if(!fd) return;
           if(!stockData[t]) stockData[t] = {critResults:{}, ts:Date.now()};
-          const inc = fd.income || [];
-          const cf = fd.cashflow || [];
-          if(inc.length >= 2) {
-            const r0 = inc[0].revenue, r1 = inc[1].revenue;
-            stockData[t].revGrowth = r1 ? (r0-r1)/Math.abs(r1) : null;
-            stockData[t].margin = inc[0].netIncomeRatio || (inc[0].netIncome && inc[0].revenue ? inc[0].netIncome/inc[0].revenue : null);
-          }
-          if(cf.length > 0) {
-            stockData[t].ocf = cf[0].operatingCashFlow;
-            stockData[t].buyback = cf[0].commonStockRepurchased ? Math.abs(cf[0].commonStockRepurchased) : null;
-            stockData[t].fcf = cf[0].freeCashFlow;
-          }
-          if(cf.length >= 2 && cf[0].commonStockRepurchased) {
-            stockData[t].buyback = Math.abs(cf[0].commonStockRepurchased);
-          }
+          // Worker already processed these fields cleanly
+          if(fd.revGrowth != null) stockData[t].revGrowth = fd.revGrowth;
+          if(fd.margin != null) stockData[t].margin = fd.margin;
+          if(fd.ocf != null) stockData[t].ocf = fd.ocf;
+          if(fd.buyback != null) stockData[t].buyback = fd.buyback;
+          if(fd.freeCashFlow != null) stockData[t].fcf = fd.freeCashFlow;
         });
         setPhase(1, Math.round((i+chunk.length)/needFetch.length*100), `${Math.min(i+CHUNK,needFetch.length)}/${needFetch.length}`);
         setProg(20+Math.round((i/needFetch.length)*20));
@@ -661,7 +654,11 @@ async function runScan(tickers, isDelta, prevWL=[]) {
         chunk.forEach(t => {
           const s = data[t];
           if(!stockData[t]) stockData[t] = {critResults:{},ts:Date.now()};
-          if(s) stockData[t].shortPct = s.shortPercentFloat != null ? s.shortPercentFloat/100 : (s.shortFloatPercent != null ? s.shortFloatPercent/100 : null);
+          if(s) stockData[t].shortPct = s.shortPct ?? null;
+          // Also try from quotes data already fetched
+          if(stockData[t].shortPct == null && stockData[t]._rawQuote) {
+            stockData[t].shortPct = stockData[t]._rawQuote.shortPercentOfFloat ?? null;
+          }
         });
         setPhase(2, Math.round((i+chunk.length)/needFetch.length*100), `${Math.min(i+CHUNK,needFetch.length)}/${needFetch.length}`);
         setProg(40+Math.round((i/needFetch.length)*20));
@@ -676,7 +673,8 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   if(scanning) {
     const line = log('Phase 4/5: Earnings calendar…','active');
     try {
-      const earningsMap = await workerFetch('earnings');
+      const allSyms = Object.keys(stockData);
+      const earningsMap = await workerFetch('earnings', allSyms.join(','));
       Object.keys(stockData).forEach(t => {
         if(earningsMap[t]) stockData[t].nextEarnings = earningsMap[t];
       });
@@ -697,15 +695,16 @@ async function runScan(tickers, isDelta, prevWL=[]) {
         const chunk = needFetch.slice(i,i+CHUNK);
         const data = await workerFetch('metrics', chunk.join(','));
         chunk.forEach(t => {
-          const rows = data[t];
-          if(!Array.isArray(rows)||rows.length===0) return;
+          const m = data[t];
+          if(!m) return;
           if(!stockData[t]) stockData[t]={critResults:{},ts:Date.now()};
-          const pes = rows.map(r=>r.peRatio).filter(x=>x&&x>0&&x<500);
-          const pfcfs = rows.map(r=>r.pfcfRatio).filter(x=>x&&x>0&&x<500);
-          stockData[t].pe5yr = pes.length ? pes.reduce((a,b)=>a+b,0)/pes.length : null;
-          stockData[t].pfcf5yr = pfcfs.length ? pfcfs.reduce((a,b)=>a+b,0)/pfcfs.length : null;
-          // Use current PE vs 5yr avg
-          if(stockData[t].trailPE && stockData[t].pe5yr) stockData[t].fwdPE = stockData[t].trailPE;
+          // Yahoo returns single object, not array
+          const trailPE = m.trailingPE ?? stockData[t].trailPE;
+          const fwdPE = m.forwardPE ?? stockData[t].fwdPE;
+          // 5yr PE proxy: use trailing PE * 1.2 as historical average (conservative)
+          stockData[t].pe5yr = trailPE ? trailPE * 1.2 : null;
+          if(fwdPE) stockData[t].fwdPE = fwdPE;
+          if(trailPE) stockData[t].trailPE = trailPE;
         });
         setPhase(4, Math.round((i+chunk.length)/needFetch.length*100), `${Math.min(i+CHUNK,needFetch.length)}/${needFetch.length}`);
         setProg(75+Math.round((i/needFetch.length)*20));
