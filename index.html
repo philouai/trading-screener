@@ -245,8 +245,12 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28
       <!-- Universe -->
       <div class="panel">
         <div class="ph"><span class="ph-title">Universe</span><span id="universe-lbl" style="font-size:11px;color:var(--muted)">S&amp;P 500 · 503 stocks</span></div>
-        <div class="pb" style="gap:8px">
-          <div style="font-size:11px;color:var(--muted);line-height:1.5">Full index scan. Criteria applied as a <strong style="color:var(--text2)">waterfall</strong> — hardest first — to minimise API calls.</div>
+        <div class="pb" style="gap:10px">
+          <div class="market-pills" style="width:100%">
+            <button class="mpill us-on" id="mpill-us2" onclick="setMarket('us')" style="flex:1;justify-content:center"><span class="fl">🇺🇸</span> US Markets</button>
+            <button class="mpill" id="mpill-eu2" onclick="setMarket('eu')" style="flex:1;justify-content:center"><span class="fl">🇪🇺</span> EU Markets</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5">Full index scan. All 7 criteria scored independently — a stock can pass any 5 of 7.</div>
           <div id="cache-status" style="font-size:10px;color:var(--muted)">No cache loaded.</div>
         </div>
       </div>
@@ -477,6 +481,10 @@ function setMarket(m) {
   market = m;
   document.getElementById('mpill-us').className = 'mpill'+(m==='us'?' us-on':'');
   document.getElementById('mpill-eu').className = 'mpill'+(m==='eu'?' eu-on':'');
+  document.getElementById('mpill-us2').className = 'mpill'+(m==='us'?' us-on':'')+' '+`${m==='us'?'':''}`;
+  document.getElementById('mpill-us2').style.flex='1'; document.getElementById('mpill-us2').style.justifyContent='center';
+  document.getElementById('mpill-eu2').className = 'mpill'+(m==='eu'?' eu-on':'');
+  document.getElementById('mpill-eu2').style.flex='1'; document.getElementById('mpill-eu2').style.justifyContent='center';
   document.getElementById('universe-lbl').textContent = currentLabel();
   document.getElementById('run-btn').className = 'btn-run '+m;
   document.getElementById('run-btn').textContent = m==='us'?`Run full S&P 500 scan`:`Run full Euro Stoxx scan`;
@@ -759,28 +767,25 @@ async function runWaterfall(allTickers, activeCriteria, isDelta, prevPassing=[])
 
   updateProg(100, 100);
 
-  // ── WATERFALL FILTER ──
-  const wfLine = log('Running waterfall filter…', 'active');
-  let survivors = Object.keys(allResults).filter(t => allResults[t].data != null);
-  const originalCount = survivors.length;
-  const wfCounts = {};
+  // ── SCORE ALL CRITERIA (no elimination — waterfall bars are display only) ──
+  const wfLine = log('Scoring all criteria…', 'active');
+  const allValid = Object.keys(allResults).filter(t => allResults[t].data != null);
+  const originalCount = allValid.length;
 
   for(let ci=0; ci<activeCriteria.length; ci++) {
     if(cancelScan) break;
     const crit = activeCriteria[ci];
-    const next = [];
-    survivors.forEach(t => {
+    let passCount = 0;
+    allValid.forEach(t => {
       const d = allResults[t].data;
       const r = crit.check(d);
       if(!allResults[t].critResults) allResults[t].critResults = {};
       allResults[t].critResults[crit.id] = r?.pass === true;
-      if(r?.pass === true) next.push(t);
+      if(r?.pass === true) passCount++;
     });
-    wfCounts[crit.id] = next.length;
-    const pct = originalCount > 0 ? (next.length/originalCount*100).toFixed(0) : 0;
+    const pct = originalCount > 0 ? (passCount/originalCount*100).toFixed(0) : 0;
     document.getElementById(`wfbar-${crit.id}`).style.width = pct+'%';
-    document.getElementById(`wfcnt-${crit.id}`).textContent = `${next.length}`;
-    survivors = next;
+    document.getElementById(`wfcnt-${crit.id}`).textContent = `${passCount}`;
     await new Promise(r=>setTimeout(r,10));
   }
 
