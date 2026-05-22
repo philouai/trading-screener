@@ -632,44 +632,44 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   setPhase(1, 100, candidates.length + '/' + needFetch.length);
   setProg(35);
 
-  // ── PHASE 3: Alpha Vantage — fetch fundamentals for candidates ──
-  if(avKey && candidates.length > 0 && scanning) {
-    const line = log('Phase 3: Alpha Vantage fundamentals (' + candidates.length + ' stocks, 25/day limit)…', 'active');
-    const CHUNK = 1; // AV requires one at a time
-    let fetched = 0;
-    for(let i=0; i<candidates.length; i++) {
+  // ── PHASE 3: Alpha Vantage — parallel batch fetch using 5 keys ──
+  // av_batch sends up to 5 stocks at once (one per key) — 5x faster
+  if(candidates.length > 0 && scanning) {
+    const needAV = candidates.filter(t => !mCache[t] || mCache[t].profitMargin == null);
+    const fromCache = candidates.length - needAV.length;
+    const line = log('Phase 3: Alpha Vantage — ' + needAV.length + ' stocks (' + fromCache + ' from cache)…', 'active');
+    const BATCH = 5; // one per AV key, fetched in parallel
+    let fetched = fromCache;
+    for(let i=0; i<needAV.length; i+=BATCH) {
       if(!scanning) break;
-      const t = candidates[i];
-      // Skip if already cached with AV data
-      if(mCache[t] && mCache[t].profitMargin != null) {
-        fetched++;
-        continue;
-      }
+      const batch = needAV.slice(i, i+BATCH);
       try {
-        const data = await workerFetchAV(t, avKey);
-        if(data && data.symbol) {
+        const base = getWorker();
+        const url = base + '?action=av_batch&symbols=' + encodeURIComponent(batch.join(','));
+        const r = await fetch(url, {signal: AbortSignal.timeout(30000)});
+        const data = await r.json();
+        batch.forEach(t => {
+          const d = data[t];
+          if(!d) return;
           if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
-          stockData[t].profitMargin = data.profitMargin;
-          stockData[t].revGrowth = data.revenueGrowthYOY;
-          stockData[t].shortPct = data.shortPct;
-          stockData[t].pfcf = data.priceToFreeCashFlow;
-          stockData[t].fwdPE = data.forwardPE || data.peRatio || stockData[t].fwdPE;
-          stockData[t].companyName = stockData[t].companyName || data.name;
-          if(data.week52Low) stockData[t].low52 = data.week52Low;
-        }
-        fetched++;
-      } catch(e) {}
+          stockData[t].profitMargin = d.profitMargin;
+          stockData[t].revGrowth = d.revenueGrowthYOY;
+          stockData[t].shortPct = d.shortPct;
+          stockData[t].pfcf = d.priceToFreeCashFlow;
+          stockData[t].fwdPE = d.forwardPE || d.peRatio || stockData[t].fwdPE;
+          stockData[t].companyName = stockData[t].companyName || d.name;
+          if(d.week52Low) stockData[t].low52 = d.week52Low;
+        });
+        fetched += batch.length;
+      } catch(e) { log('Batch error: ' + e.message, 'err'); }
       const pct = Math.round(fetched / candidates.length * 100);
       setPhase(2, pct, fetched + '/' + candidates.length);
       setProg(35 + Math.round(pct * 0.55));
-      // AV rate limit: 5 calls/min on free tier — wait 12s between calls
-      if(i < candidates.length - 1) await new Promise(r => setTimeout(r, 12000));
+      // Wait 12s between batches (AV free tier: 5 calls/min per key)
+      if(i + BATCH < needAV.length) await new Promise(r => setTimeout(r, 12000));
     }
     line.className='pline done'; line.querySelector('.pdot').className='pdot d';
-    log('Alpha Vantage: ' + fetched + ' stocks fetched.', 'done');
-  } else if(!avKey) {
-    log('⚠ No Alpha Vantage key — fundamental criteria will use sheet data only.', 'active');
-    setPhase(2, 100, 'skipped');
+    log('Alpha Vantage: ' + fetched + ' stocks loaded.', 'done');
   }
 
   // Fill remaining phase bars
