@@ -336,21 +336,39 @@ const RUSSELL2000 = "AACI,AACT,AAOI,AAPX,ABCB,ABCL,ABEO,ABMD,ABNB,ABOS,ABST,ABTX
 const EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,RAND.AS,ABN.AS,NN.AS,SAP.DE,SIE.DE,ALV.DE,MUV2.DE,DTE.DE,BAYN.DE,BMW.DE,VOW3.DE,MBG.DE,DB1.DE,BAS.DE,EOAN.DE,RWE.DE,HEN3.DE,IFX.DE,ADS.DE,CON.DE,MTX.DE,SHL.DE,ZAL.DE,MC.PA,OR.PA,TTE.PA,SAN.PA,AIR.PA,BNP.PA,ACA.PA,SGO.PA,DG.PA,RI.PA,CS.PA,ML.PA,VIE.PA,GLE.PA,HO.PA,EN.PA,CAP.PA,EL.PA,RMS.PA,KER.PA,NESN.SW,NOVN.SW,ROG.SW,ZURN.SW,ABBN.SW,SREN.SW,LONN.SW,GIVN.SW,SCMN.SW,AZN.L,HSBA.L,BP.L,RIO.L,ULVR.L,GSK.L,DGE.L,REL.L,BT.A.L,LLOY.L,VOD.L,PRU.L,STAN.L,NG.L,SSE.L,IAG.L,CPG.L,IMB.L,BA.L,CNA.L,SAN.MC,ITX.MC,BBVA.MC,TEF.MC,IBE.MC,FER.MC,REP.MC,ACS.MC,ACX.MC,MAP.MC,RACE.MI,ENI.MI,ENEL.MI,ISP.MI,UCG.MI,G.MI,LDO.MI,PRY.MI,MB.MI,NOVO-B.CO,MAERSK-B.CO,DSV.CO,ORSTED.CO,COLO-B.CO,ERIC-B.ST,VOLV-B.ST,HM-B.ST,SEB-A.ST,NOKIA.HE,FORTUM.HE,SAMPO.HE,ADEN.SW,SIKA.SW,SGS.SW,KBC.BR,UCB.BR,SOLB.BR,ABI.BR,CRH.IR".split(',');
 
 /* ═══ CRITERIA ═══ */
+// Score result types:
+// { pass: true,  val, missing: false } = confirmed pass ✓
+// { pass: false, val, missing: false } = confirmed fail ✗
+// { pass: null,  val, missing: true  } = missing data — optimistically included ~
 const CRITERIA = [
   { id:'c6', label:'High short interest', diff:'hard', desc:'Short % of float > 5%',
-    score: d => d.shortPct != null ? { pass: d.shortPct > 0.05, val:`Short: ${(d.shortPct*100).toFixed(1)}%` } : null },
-  { id:'c3', label:'Buyback / Low P/FCF', diff:'hard', desc:'P/FCF < 20 (buyback-friendly valuation)',
-    score: d => d.pfcf != null ? { pass: d.pfcf > 0 && d.pfcf < 20, val:`P/FCF: ${d.pfcf.toFixed(1)}x` } : null },
-  { id:'c8', label:'P/E compressed', diff:'hard', desc:'Forward P/E < 15x (historically cheap)',
-    score: d => d.fwdPE != null ? { pass: d.fwdPE > 0 && d.fwdPE < 15, val:`P/E: ${d.fwdPE.toFixed(1)}x` } : null },
-  { id:'c11', label:'Revenue growing', diff:'med', desc:'Sales Q/Q growth > 0%',
-    score: d => d.revGrowth != null ? { pass: d.revGrowth > 0, val:`Sales Q/Q: ${(d.revGrowth*100).toFixed(1)}%` } : null },
+    score: d => d.shortPct != null
+      ? { pass: d.shortPct > 0.05, missing: false, val:`Short: ${(d.shortPct*100).toFixed(1)}%` }
+      : { pass: null, missing: true, val:'No data' } },
+  { id:'c3', label:'Buyback / Low P/FCF', diff:'hard', desc:'P/FCF < 20 (buyback-friendly)',
+    score: d => d.pfcf != null
+      ? { pass: d.pfcf > 0 && d.pfcf < 20, missing: false, val:`P/FCF: ${d.pfcf.toFixed(1)}x` }
+      : { pass: null, missing: true, val:'No data' } },
+  { id:'c8', label:'P/E compressed', diff:'hard', desc:'P/E < 15x (historically cheap)',
+    score: d => d.fwdPE != null && d.fwdPE > 0
+      ? { pass: d.fwdPE < 15, missing: false, val:`P/E: ${d.fwdPE.toFixed(1)}x` }
+      : { pass: null, missing: true, val:'No data' } },
+  { id:'c11', label:'Revenue growing', diff:'med', desc:'Sales/Revenue growth > 0%',
+    score: d => d.revGrowth != null
+      ? { pass: d.revGrowth > 0, missing: false, val:`Rev growth: ${(d.revGrowth*100).toFixed(1)}%` }
+      : { pass: null, missing: true, val:'No data' } },
   { id:'c4', label:'Strong fundamentals', diff:'med', desc:'Profit margin > 5%',
-    score: d => d.profitMargin != null ? { pass: d.profitMargin > 0.05, val:`Profit margin: ${(d.profitMargin*100).toFixed(1)}%` } : null },
+    score: d => d.profitMargin != null
+      ? { pass: d.profitMargin > 0.05, missing: false, val:`Margin: ${(d.profitMargin*100).toFixed(1)}%` }
+      : { pass: null, missing: true, val:'No data' } },
   { id:'c9', label:'Earnings ≤ 30 days', diff:'med', desc:'Next earnings within 30 days',
-    score: d => d.nextEarnings ? (() => { const days=Math.round((new Date(d.nextEarnings)-Date.now())/86400000); return {pass:days>=0&&days<=30,val:days>=0?`In ${days}d`:`${Math.abs(days)}d ago`}; })() : null },
+    score: d => d.nextEarnings
+      ? (() => { const days=Math.round((new Date(d.nextEarnings)-Date.now())/86400000); return {pass:days>=0&&days<=30, missing:false, val:days>=0?`In ${days}d`:`${Math.abs(days)}d ago`}; })()
+      : { pass: null, missing: true, val:'No data' } },
   { id:'c1', label:'Near 52-week low', diff:'easy', desc:'Price within 20% of 52wk low',
-    score: d => (d.price != null && d.low52 != null) ? { pass: (d.price-d.low52)/d.low52 <= 0.20, val:`+${((d.price-d.low52)/d.low52*100).toFixed(1)}% vs 52wk low` } : null }
+    score: d => (d.price != null && d.low52 != null)
+      ? { pass: (d.price-d.low52)/d.low52 <= 0.20, missing: false, val:`+${((d.price-d.low52)/d.low52*100).toFixed(1)}% vs 52wk low` }
+      : { pass: null, missing: true, val:'No data' } }
 ];
 
 /* ═══ STATE ═══ */
@@ -557,7 +575,7 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   const pbars = document.getElementById('phase-bars');
 
   // Phase bar rows
-  const phases = ['quotes','fundamentals','short interest','earnings','metrics'];
+  const phases = ['Google Sheet','pre-filter','fundamentals (AV)','short interest (top only)','metrics'];
   phases.forEach((p,i) => {
     const row = document.createElement('div'); row.className = 'phase-row';
     row.innerHTML = `<span class="phase-lbl" id="ph-lbl-${i}">Phase ${i+1}: ${p}</span><div class="phase-bar-wrap"><div class="phase-bar${isEu?' eu':''}" id="ph-bar-${i}" style="width:0%"></div></div><span class="phase-cnt" id="ph-cnt-${i}">—</span>`;
@@ -599,8 +617,11 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   if(scanning) {
     const line = log('Phase 1: Loading Google Sheet data…', 'active');
     try {
-      const sheetData = await workerFetch('sheet', '', sheetUrl);
+      const sheetResp = await workerFetch('sheet', '', sheetUrl);
+      const sheetData = sheetResp.data || sheetResp;
       const allTickers = list();
+      const sheetKeys = Object.keys(sheetData);
+      log('Sheet keys sample: ' + sheetKeys.slice(0,3).join(',') + ' (total: ' + sheetKeys.length + ')', 'active');
       allTickers.forEach(t => {
         const d = sheetData[t];
         if(!d) return;
@@ -625,24 +646,28 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   const avKey = 'VREMNI755NX1LKE7';
   const candidates = needFetch.filter(t => {
     const d = stockData[t];
-    if(!d || !d.price || !d.low52) return true; // no sheet data, include anyway
-    return (d.price - d.low52) / d.low52 <= 0.25; // within 25% of 52wk low
+    if(!d || !d.price || !d.low52) return false; // no sheet data, skip
+    const pct = (d.price - d.low52) / d.low52;
+    return pct >= 0 && pct <= 0.25; // within 25% of 52wk low (pct is decimal e.g. 0.09)
   });
   log('Pre-filter: ' + candidates.length + ' of ' + needFetch.length + ' stocks within 25% of 52wk low', 'active');
   setPhase(1, 100, candidates.length + '/' + needFetch.length);
   setProg(35);
 
-  // ── PHASE 3: Alpha Vantage — parallel batch fetch using 5 keys ──
-  // av_batch sends up to 5 stocks at once (one per key) — 5x faster
+  // ── PHASE 3: Alpha Vantage — fundamentals first, short interest last ──
+  // Step A: Fetch fundamentals (revenue, margins, PE, P/FCF) for all candidates
+  // Step B: Score without short interest, keep only top candidates
+  // Step C: Fetch short interest only for survivors — much smaller list
   if(candidates.length > 0 && scanning) {
-    const needAV = candidates.filter(t => !mCache[t] || mCache[t].profitMargin == null);
-    const fromCache = candidates.length - needAV.length;
-    const line = log('Phase 3: Alpha Vantage — ' + needAV.length + ' stocks (' + fromCache + ' from cache)…', 'active');
-    const BATCH = 5; // one per AV key, fetched in parallel
-    let fetched = fromCache;
-    for(let i=0; i<needAV.length; i+=BATCH) {
+    // STEP A: Fundamentals for all candidates
+    const needFundamentals = candidates.filter(t => !mCache[t] || mCache[t].profitMargin == null);
+    const fromCacheF = candidates.length - needFundamentals.length;
+    const lineF = log('Phase 3A: Fundamentals for ' + needFundamentals.length + ' candidates…', 'active');
+    const BATCH = 5;
+    let fetchedF = fromCacheF;
+    for(let i=0; i<needFundamentals.length; i+=BATCH) {
       if(!scanning) break;
-      const batch = needAV.slice(i, i+BATCH);
+      const batch = needFundamentals.slice(i, i+BATCH);
       try {
         const base = getWorker();
         const url = base + '?action=av_batch&symbols=' + encodeURIComponent(batch.join(','));
@@ -654,22 +679,66 @@ async function runScan(tickers, isDelta, prevWL=[]) {
           if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
           stockData[t].profitMargin = d.profitMargin;
           stockData[t].revGrowth = d.revenueGrowthYOY;
-          stockData[t].shortPct = d.shortPct;
           stockData[t].pfcf = d.priceToFreeCashFlow;
           stockData[t].fwdPE = d.forwardPE || d.peRatio || stockData[t].fwdPE;
           stockData[t].companyName = stockData[t].companyName || d.name;
           if(d.week52Low) stockData[t].low52 = d.week52Low;
+          // Store short pct if AV provides it
+          if(d.shortPct != null) stockData[t].shortPct = d.shortPct;
         });
-        fetched += batch.length;
+        fetchedF += batch.length;
       } catch(e) { log('Batch error: ' + e.message, 'err'); }
-      const pct = Math.round(fetched / candidates.length * 100);
-      setPhase(2, pct, fetched + '/' + candidates.length);
-      setProg(35 + Math.round(pct * 0.55));
-      // Wait 12s between batches (AV free tier: 5 calls/min per key)
-      if(i + BATCH < needAV.length) await new Promise(r => setTimeout(r, 12000));
+      const pct = Math.round(fetchedF / candidates.length * 100);
+      setPhase(2, pct, fetchedF + '/' + candidates.length);
+      setProg(35 + Math.round(pct * 0.35));
+      if(i + BATCH < needFundamentals.length) await new Promise(r => setTimeout(r, 13000));
     }
-    line.className='pline done'; line.querySelector('.pdot').className='pdot d';
-    log('Alpha Vantage: ' + fetched + ' stocks loaded.', 'done');
+    lineF.className='pline done'; lineF.querySelector('.pdot').className='pdot d';
+    log('Fundamentals loaded. Now filtering before short interest…', 'done');
+
+    // STEP B: Quick pre-score to find best candidates for short interest fetch
+    // Only fetch short interest for stocks with 3+ confirmed/possible criteria met
+    const shortCandidates = candidates.filter(t => {
+      const d = stockData[t];
+      if(!d) return false;
+      let score = 0;
+      if(d.price && d.low52 && (d.price-d.low52)/d.low52 <= 0.20) score++;
+      if(d.fwdPE && d.fwdPE > 0 && d.fwdPE < 15) score++;
+      if(d.pfcf && d.pfcf > 0 && d.pfcf < 20) score++;
+      if(d.profitMargin && d.profitMargin > 0.05) score++;
+      if(d.revGrowth && d.revGrowth > 0) score++;
+      return score >= 2; // at least 2 confirmed criteria before short interest
+    });
+    log('Short interest: fetching for ' + shortCandidates.length + ' top candidates only', 'active');
+    setPhase(3, 0, shortCandidates.length + ' candidates');
+    setProg(72);
+
+    // STEP C: Short interest for top candidates only
+    const needShort = shortCandidates.filter(t => !mCache[t] || mCache[t].shortPct == null);
+    let fetchedS = shortCandidates.length - needShort.length;
+    for(let i=0; i<needShort.length; i+=BATCH) {
+      if(!scanning) break;
+      const batch = needShort.slice(i, i+BATCH);
+      try {
+        const base = getWorker();
+        const url = base + '?action=av_batch&symbols=' + encodeURIComponent(batch.join(','));
+        const r = await fetch(url, {signal: AbortSignal.timeout(30000)});
+        const data = await r.json();
+        batch.forEach(t => {
+          const d = data[t];
+          if(d && d.shortPct != null) {
+            if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
+            stockData[t].shortPct = d.shortPct;
+          }
+        });
+        fetchedS += batch.length;
+      } catch(e) {}
+      const pct = Math.round(fetchedS / Math.max(shortCandidates.length,1) * 100);
+      setPhase(3, pct, fetchedS + '/' + shortCandidates.length);
+      setProg(72 + Math.round(pct * 0.20));
+      if(i + BATCH < needShort.length) await new Promise(r => setTimeout(r, 13000));
+    }
+    log('Short interest loaded.', 'done');
   }
 
   // Fill remaining phase bars
@@ -692,11 +761,11 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     });
     stockData[t].critResults = critResults;
     return { ticker:t, score, critResults, data:d };
-  }).filter(x => x.score >= Math.max(threshold-2, 1))
+  }).filter(x => x.score >= 1)
     .sort((a,b) => b.score-a.score);
 
   // ── AUTO-SAVE PASSING TO WATCHLIST ──
-  const passing = scored.filter(x=>x.score>=threshold);
+  const passing = scored.filter(x=>x.score>=threshold); // only confirmed passes auto-save
   const wl = getWL().filter(w=>w.market!==market);
   passing.forEach(x => wl.push({ticker:x.ticker, market, score:x.score, ts:Date.now(), companyName:x.data.companyName||'', price:x.data.price||0, low52:x.data.low52||0}));
   setWL(wl); updateWLBadge();
@@ -709,7 +778,9 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   rc.innerHTML = '';
   const sb = document.createElement('div'); sb.className='sbar';
   sb.innerHTML = `
-    <div class="ss"><span class="sv" style="color:var(${isEu?'--euro':'--accent'})">${passing.length}</span><span class="sl">Passed</span></div>
+    <div class="ss"><span class="sv" style="color:var(${isEu?'--euro':'--accent'})">${passing.length}</span><span class="sl">Confirmed</span></div>
+    <div class="ssep"></div>
+    <div class="ss"><span class="sv" style="color:var(--warn)">${scored.filter(x=>x.score<threshold&&x.optimistic>=threshold).length}</span><span class="sl">Possible</span></div>
     <div class="ssep"></div>
     <div class="ss"><span class="sv">${Object.keys(stockData).length}</span><span class="sl">Screened</span></div>
     <div class="ssep"></div>
@@ -723,14 +794,15 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     rc.innerHTML += `<div class="empty"><div class="ei">◎</div><p>No stocks met ${Math.max(threshold-2,1)}+ criteria.<br>Try lowering the threshold.</p></div>`;
   } else {
     const grid = document.createElement('div'); grid.className='results-grid';
-    scored.forEach(({ticker,score,critResults,data}) => grid.appendChild(buildCard(ticker,score,critResults,data,activeCrit)));
+    scored.forEach(item => grid.appendChild(buildCard(item.ticker,item.score,item.critResults,item.data,activeCrit,item)));
     rc.appendChild(grid);
   }
   refreshCacheStatus();
 }
 
 /* ═══ BUILD CARD ═══ */
-function buildCard(ticker, score, critResults, data, activeCrit) {
+function buildCard(ticker, score, critResults, data, activeCrit, item) {
+  item = item || {optimistic: score, missing: 0};
   const isPass = score >= threshold, isEu = market==='eu';
   const card = document.createElement('div');
   card.className = `rcard${isPass?' pass':''}${isEu&&isPass?' eu':''}`;
@@ -746,7 +818,7 @@ function buildCard(ticker, score, critResults, data, activeCrit) {
   card.innerHTML = `
     <div class="rcard-top">
       <div><div class="rticker">${ticker}</div><div class="rname">${data.companyName||''} ${data.exchange?'· '+data.exchange:''}</div></div>
-      <div style="text-align:right"><div class="rscore ${sc}">${score}<span style="font-size:13px;color:var(--muted)">/${activeCrit.length}</span></div><span class="pbadge ${bc}">${bt}</span></div>
+      <div style="text-align:right"><div class="rscore ${sc}">${score}<span style="font-size:11px;color:var(--muted)">✓</span>${item.missing>0?`<span style="font-size:11px;color:var(--warn)"> +${item.missing}~</span>`:""}<span style="font-size:13px;color:var(--muted)">/${activeCrit.length}</span></div><span class="pbadge ${bc}">${bt}</span></div>
     </div>
     <div class="rcard-body">
       <div class="chips">${chips}</div>
