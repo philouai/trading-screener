@@ -240,7 +240,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 
       <!-- Universe + Market -->
       <div class="panel">
-        <div class="ph"><span class="ph-title">Universe</span><span id="universe-lbl" style="font-size:11px;color:var(--muted)">Russell 2000 · 1000 stocks</span></div>
+        <div class="ph"><span class="ph-title">Universe</span><span id="universe-lbl" style="font-size:11px;color:var(--muted)">Russell 2000 · 800 stocks</span></div>
         <div class="pb">
           <div class="mpills">
             <button class="mpill us-on" id="mpill-us" onclick="setMarket('us')"><span class="fl">🇺🇸</span> US Markets</button>
@@ -276,13 +276,14 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
       <button class="btn-run us" id="run-btn" onclick="startScan()">Run full Russell 2000 scan</button>
       <button class="btn-sec" id="delta-btn" onclick="startDelta()" style="display:none">↑ Re-scan: new stocks only</button>
       <button class="btn-sec" onclick="clearCache()" id="clear-btn" style="display:none">Clear cache &amp; reset</button>
+      <button class="btn-sec" onclick="loadFromSheet()" style="margin-top:6px">📱 Load saved results</button>
     </div>
 
     <!-- RIGHT -->
     <div id="right-col">
       <div class="empty">
         <div class="ei">◎</div>
-        <p id="empty-msg">Set up your Worker URL, then run a scan.<br>Full S&amp;P 500 results in ~30 seconds.</p>
+        <p id="empty-msg">Set up your Worker URL, then run a scan.<br>Clear cache &amp; reset, then run the scan.</p>
       </div>
     </div>
   </div>
@@ -418,6 +419,9 @@ function setMarket(m) {
   document.getElementById('right-col').innerHTML = `<div class="empty"><div class="ei">◎</div><p id="empty-msg">Set up your Worker URL, then run a scan.</p></div>`;
   document.querySelectorAll('.nav-tab.active,.nav-tab.active-eu').forEach(t=>{t.classList.remove('active','active-eu');t.classList.add(m==='eu'?'active-eu':'active');});
   refreshCacheStatus();
+
+  // ── AUTO-SYNC RESULTS TO GOOGLE SHEET ──
+  autoSyncToSheet(scored, activeCrit).catch(function() {});
 }
 
 function renderCriteria() {
@@ -498,6 +502,95 @@ async function saveAndPing() {
     document.getElementById('ping-result').innerHTML = '✗ Failed: ' + e.message;
     document.getElementById('api-dot').className = 'status-dot dot-err';
     document.getElementById('api-status-lbl').textContent = 'Error';
+  }
+}
+
+/* ═══ GOOGLE SHEET SYNC ═══ */
+async function autoSyncToSheet(scored, activeCrit) {
+  const base = getWorker();
+  if(!base) return;
+  try {
+    // Clear old results first
+    await fetch(base + '?action=save_results', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: 'clear' })
+    });
+    // Write all scored stocks in batches of 50
+    const BATCH = 50;
+    for(let i=0; i<scored.length; i+=BATCH) {
+      const batch = scored.slice(i, i+BATCH);
+      const rows = batch.map(item => {
+        const d = item.data;
+        return [
+          item.ticker,
+          d.companyName || '',
+          item.score + '/' + activeCrit.length,
+          item.score,
+          item.optimistic,
+          d.price ? '$' + d.price.toFixed(2) : '',
+          d.low52 ? '$' + d.low52.toFixed(2) : '',
+          d.fwdPE ? d.fwdPE.toFixed(1) + 'x' : '',
+          d.shortPct ? (d.shortPct*100).toFixed(1) + '%' : '',
+          d.profitMargin ? (d.profitMargin*100).toFixed(1) + '%' : '',
+          d.revGrowth ? (d.revGrowth*100).toFixed(1) + '%' : '',
+          d.pfcf ? d.pfcf.toFixed(1) + 'x' : '',
+          d.sector || '',
+          new Date().toLocaleString()
+        ];
+      });
+      await fetch(base + '?action=save_results', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ action: 'append', rows: rows })
+      });
+    }
+    log('✓ Results saved to Google Sheet — visible on all devices.', 'done');
+  } catch(e) {
+    log('Sheet sync: ' + e.message, 'err');
+  }
+}
+
+// Load results from Sheet (for phone/other devices that haven't run a scan)
+async function loadFromSheet() {
+  const base = getWorker();
+  if(!base) return;
+  const rc = document.getElementById('right-col');
+  rc.innerHTML = '<div class="empty"><div class="ei"><span class="spinner"></span></div><p>Loading saved results from Google Sheet…</p></div>';
+  try {
+    const r = await fetch(base + '?action=get_results', {signal: AbortSignal.timeout(10000)});
+    const d = await r.json();
+    if(!d.rows || d.rows.length <= 1) {
+      rc.innerHTML = '<div class="empty"><div class="ei">◎</div><p>No saved results yet.<br>Run a scan on desktop first.</p></div>';
+      return;
+    }
+    const headers = d.rows[0];
+    const rows = d.rows.slice(1);
+    rc.innerHTML = '';
+    // Summary
+    const sb = document.createElement('div'); sb.className = 'sbar';
+    sb.innerHTML = '<div class="ss"><span class="sv" style="color:var(--accent)">' + rows.length + '</span><span class="sl">Saved results</span></div><div class="ssep"></div><div class="ss"><span class="sv" style="font-size:11px;margin-top:4px">' + (rows[0] && rows[0][13] ? rows[0][13] : '—') + '</span><span class="sl">Last scan</span></div>';
+    rc.appendChild(sb);
+    // Cards
+    const grid = document.createElement('div'); grid.className = 'results-grid';
+    rows.forEach(function(row) {
+      const card = document.createElement('div');
+      const score = parseInt(row[3]) || 0;
+      const total = (row[2] || '0/7').split('/')[1] || 7;
+      const isPass = score >= threshold;
+      card.className = 'rcard' + (isPass ? ' pass' : '');
+      card.innerHTML = '<div class="rcard-top"><div><div class="rticker">' + row[0] + '</div><div class="rname">' + row[1] + ' ' + (row[12]?'· '+row[12]:'') + '</div></div><div style="text-align:right"><div class="rscore ' + (isPass?'s-pass':'s-warn') + '">' + row[2] + '</div><span class="pbadge ' + (isPass?'pb-pass':'pb-warn') + '">' + (isPass?'PASS':'POSSIBLE') + '</span></div></div><div class="rcard-body"><div class="rmeta">' +
+        (row[5]?'Price: <strong>'+row[5]+'</strong> ':'')+
+        (row[6]?'52wk low: <strong>'+row[6]+'</strong> ':'')+
+        (row[7]?'PE: <strong>'+row[7]+'</strong> ':'')+
+        (row[8]?'Short: <strong>'+row[8]+'</strong> ':'')+
+        (row[9]?'Margin: <strong>'+row[9]+'</strong>':'')+
+      '</div></div>';
+      grid.appendChild(card);
+    });
+    rc.appendChild(grid);
+  } catch(e) {
+    rc.innerHTML = '<div class="empty"><div class="ei">◎</div><p>Could not load results: ' + e.message + '</p></div>';
   }
 }
 
