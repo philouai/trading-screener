@@ -636,11 +636,18 @@ async function startDelta() {
   document.getElementById('delta-btn').textContent = '⏹ Cancel delta';
   const cache = getCache()[market]||{};
   const prevWL = getWL().filter(w=>w.market===market).map(w=>w.ticker);
-  // Delta: tickers not in cache OR that previously failed c6 (short interest)
+  // Delta: only tickers with NO AV data yet (profitMargin is the key indicator)
+  // This avoids re-fetching everything just because short interest is missing
   const newTickers = list().filter(t => {
     const c = cache[t];
-    return !c || c.critResults?.c6 !== true;
+    if(!c) return true; // never fetched at all
+    if(!c.price && !c.low52) return true; // no sheet data
+    // Only re-fetch if within 25% of 52wk low AND missing AV fundamentals
+    const pct = (c.price && c.low52) ? (c.price - c.low52) / c.low52 : 1;
+    const missingAV = c.profitMargin == null && c.revGrowth == null && c.shortPct == null;
+    return pct <= 0.25 && missingAV;
   });
+  log('Delta: ' + newTickers.length + ' stocks need AV data', 'active');
   await runScan(newTickers, true, prevWL);
   scanning = false;
   document.getElementById('delta-btn').textContent = '↑ Re-scan: new stocks only';
