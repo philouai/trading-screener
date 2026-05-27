@@ -433,9 +433,12 @@ function setMarket(m) {
   document.getElementById('right-col').innerHTML = `<div class="empty"><div class="ei">◎</div><p id="empty-msg">Set up your Worker URL, then run a scan.</p></div>`;
   document.querySelectorAll('.nav-tab.active,.nav-tab.active-eu').forEach(t=>{t.classList.remove('active','active-eu');t.classList.add(m==='eu'?'active-eu':'active');});
   refreshCacheStatus();
+  setProg(100);
 
-  // ── AUTO-SYNC RESULTS TO GOOGLE SHEET ──
-  autoSyncToSheet(scored, activeCrit).catch(function() {});
+  // ── AUTO-SYNC RESULTS TO GOOGLE SHEET (fire and forget, never blocks UI) ──
+  setTimeout(function() {
+    autoSyncToSheet(scored, activeCrit).catch(function() {});
+  }, 100);
 }
 
 function renderCriteria() {
@@ -528,7 +531,8 @@ async function autoSyncToSheet(scored, activeCrit) {
     await fetch(base + '?action=save_results', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ action: 'clear' })
+      body: JSON.stringify({ action: 'clear' }),
+      signal: AbortSignal.timeout(8000)
     });
     // Write all scored stocks in batches of 50
     const BATCH = 50;
@@ -556,7 +560,8 @@ async function autoSyncToSheet(scored, activeCrit) {
       await fetch(base + '?action=save_results', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ action: 'append', rows: rows })
+        body: JSON.stringify({ action: 'append', rows: rows }),
+        signal: AbortSignal.timeout(8000)
       });
     }
     log('✓ Results saved to Google Sheet — visible on all devices.', 'done');
@@ -818,6 +823,7 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   }
   // Fill remaining phase bars
   setPhase(3, 100, '✓'); setPhase(4, 100, '✓');
+  setProg(98);
 
   // Fill remaining phase bars
   for(let pi=3;pi<5;pi++) setPhase(pi,100,'✓');
