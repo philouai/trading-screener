@@ -902,16 +902,15 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     passing.forEach(x => wl.push({ticker:x.ticker, market, score:x.score, ts:Date.now(), companyName:x.data.companyName||'', price:x.data.price||0, low52:x.data.low52||0}));
     setWL(wl); updateWLBadge();
   }, 50);
-  log(`Done — ${passing.length} stocks passed (${scored.length} shown including near-misses).`, 'done');
-  await new Promise(r=>setTimeout(r,500));
+  log('Done — ' + scored.length + ' stocks shown.', 'done');
 
   // ── RENDER ──
   rc.innerHTML = '';
   const sb = document.createElement('div'); sb.className='sbar';
   sb.innerHTML = `
-    <div class="ss"><span class="sv" style="color:var(${isEu?'--euro':'--accent'})">${passing.length}</span><span class="sl">Confirmed</span></div>
+    <div class="ss"><span class="sv" style="color:var(${isEu?'--euro':'--accent'})">${scored.filter(x=>x.score>=threshold).length}</span><span class="sl">Confirmed</span></div>
     <div class="ssep"></div>
-    <div class="ss"><span class="sv" style="color:var(--warn)">${scored.filter(x=>x.score<threshold&&x.optimistic>=threshold).length}</span><span class="sl">Possible</span></div>
+    <div class="ss"><span class="sv" style="color:var(--warn)">${scored.filter(x=>x.score<threshold&&x.score>=threshold-2).length}</span><span class="sl">Possible</span></div>
     <div class="ssep"></div>
     <div class="ss"><span class="sv">${Object.keys(stockData).length}</span><span class="sl">Screened</span></div>
     <div class="ssep"></div>
@@ -933,7 +932,8 @@ async function runScan(tickers, isDelta, prevWL=[]) {
 
 /* ═══ BUILD CARD ═══ */
 function buildCard(ticker, score, critResults, data, activeCrit, item) {
-  item = item || {optimistic: score, missing: 0};
+  item = item || {score: score, optimistic: score, missing: 0, failed: 0};
+  if(item.optimistic == null) item.optimistic = item.score;
   const isPass = score >= threshold, isEu = market==='eu';
   const card = document.createElement('div');
   const isPossibleCard = !isPass && item.optimistic >= threshold;
