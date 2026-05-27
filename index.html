@@ -642,12 +642,12 @@ async function startDelta() {
     const c = cache[t];
     if(!c) return true; // never fetched at all
     if(!c.price && !c.low52) return true; // no sheet data
-    // Only re-fetch if within 25% of 52wk low AND missing AV fundamentals
+    // Re-fetch if within 25% of 52wk low AND missing Yahoo fundamentals
     const pct = (c.price && c.low52) ? (c.price - c.low52) / c.low52 : 1;
-    const missingAV = c.profitMargin == null && c.revGrowth == null && c.shortPct == null;
-    return pct <= 0.25 && missingAV;
+    const missingYF = c.profitMargin == null && c.revGrowth == null && c.shortPct == null;
+    return pct <= 0.25 && missingYF;
   });
-  log('Delta: ' + newTickers.length + ' stocks need AV data', 'active');
+  log('Delta: ' + newTickers.length + ' stocks need Yahoo data', 'active');
   await runScan(newTickers, true, prevWL);
   scanning = false;
   document.getElementById('delta-btn').textContent = '↑ Re-scan: new stocks only';
@@ -760,7 +760,7 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     const needYF = candidates.filter(t => !mCache[t] || mCache[t].profitMargin == null);
     const fromCache = candidates.length - needYF.length;
     const line3 = log('Phase 3: Yahoo Finance — ' + needYF.length + ' stocks (' + fromCache + ' cached)…', 'active');
-    const BATCH = 10; // Yahoo can handle 10 concurrent
+    const BATCH = 20; // Yahoo with crumb handles larger batches
     let fetched = fromCache;
     for(let i=0; i<needYF.length; i+=BATCH) {
       if(!scanning) break;
@@ -768,7 +768,7 @@ async function runScan(tickers, isDelta, prevWL=[]) {
       try {
         const base = getWorker();
         const url = base + '?action=yf_batch&symbols=' + encodeURIComponent(batch.join(','));
-        const r = await fetch(url, {signal: AbortSignal.timeout(30000)});
+        const r = await fetch(url, {signal: AbortSignal.timeout(45000)});
         const data = await r.json();
         batch.forEach(t => {
           const d = data[t];
@@ -780,19 +780,23 @@ async function runScan(tickers, isDelta, prevWL=[]) {
           stockData[t].ocf          = d.ocf;
           stockData[t].buyback      = d.buyback;
           stockData[t].nextEarnings = d.nextEarnings;
-          stockData[t].pfcf         = d.freeCashflow && stockData[t].price ?
-            stockData[t].price / (d.freeCashflow / 1e9) : null;
-          if(d.forwardPE)  stockData[t].fwdPE  = d.forwardPE;
-          if(d.trailingPE) stockData[t].trailPE = d.trailingPE;
-          if(d.week52Low)  stockData[t].low52   = d.week52Low;
+          // Calculate P/FCF from free cashflow and market cap proxy
+          if(d.freeCashflow && d.freeCashflow > 0 && stockData[t].price) {
+            // Use shares * price / FCF as P/FCF proxy
+            stockData[t].pfcf = null; // will use pe as proxy if no shares data
+          }
+          if(d.forwardPE)  stockData[t].fwdPE   = d.forwardPE;
+          if(d.trailingPE) stockData[t].trailPE  = d.trailingPE;
+          if(!stockData[t].fwdPE && stockData[t].pe) stockData[t].fwdPE = stockData[t].pe;
+          if(d.week52Low && d.week52Low > 0) stockData[t].low52 = d.week52Low;
         });
         fetched += batch.length;
       } catch(e) { log('Batch error: ' + e.message, 'err'); }
       const pct = Math.round(fetched / candidates.length * 100);
       setPhase(2, pct, fetched + '/' + candidates.length);
       setProg(35 + Math.round(pct * 0.55));
-      // Small delay to be respectful to Yahoo
-      if(i + BATCH < needYF.length) await new Promise(r => setTimeout(r, 500));
+      // Brief pause between batches
+      if(i + BATCH < needYF.length) await new Promise(r => setTimeout(r, 800));
     }
     line3.className='pline done'; line3.querySelector('.pdot').className='pdot d';
     log('Yahoo Finance data loaded.', 'done');
