@@ -390,9 +390,9 @@ var CRITERIA = [
 ];
 
 /* ═══ STATE ═══ */
-let market = 'us';
-let threshold = 5;
-let scanning = false;
+var market = 'us';
+var threshold = 5;
+var scanning = false;
 
 const getCache = () => { try { return JSON.parse(localStorage.getItem('sbc')||'{}'); } catch(e){return {};} };
 const setCache = c => {
@@ -588,7 +588,7 @@ async function autoSyncToSheet(scored, activeCrit) {
     });
     // Write all scored stocks in batches of 50
     const BATCH = 50;
-    for(let i=0; i<scored.length; i+=BATCH) {
+    for(var i=0; i<scored.length; i+=BATCH) {
       const batch = scored.slice(i, i+BATCH);
       const rows = batch.map(item => {
         const d = item.data;
@@ -669,7 +669,7 @@ async function loadFromSheet() {
 async function workerFetch(action, symbols='', sheetUrl='') {
   const base = getWorker();
   if(!base) throw new Error('No Worker URL set. Paste it in API Setup above.');
-  let url = `${base}?action=${action}`;
+  var url = base + '?action=' + action;
   if(symbols) url += '&symbols=' + encodeURIComponent(symbols);
   if(sheetUrl) url += '&sheet=' + encodeURIComponent(sheetUrl);
   const r = await fetch(url, {signal: AbortSignal.timeout(30000)});
