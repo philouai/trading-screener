@@ -137,12 +137,16 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 .rcard.pass{border:2px solid var(--accent);background:linear-gradient(135deg,rgba(74,222,128,.06) 0%,var(--surface) 60%);box-shadow:0 0 24px rgba(74,222,128,.12),0 4px 16px rgba(0,0,0,.3)}
 .rcard.pass.eu{border:2px solid var(--euro);background:linear-gradient(135deg,rgba(167,139,250,.06) 0%,var(--surface) 60%);box-shadow:0 0 24px rgba(167,139,250,.12),0 4px 16px rgba(0,0,0,.3)}
 .rcard.possible{border:1px solid var(--warn-b);background:var(--surface)}
-.rcard-top{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px}
-.rcard.pass .rcard-top{border-bottom-color:rgba(74,222,128,.2)}
-.rticker{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.5px}
+.rcard-top{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px;position:relative}
+.rcard.pass .rcard-top{border-bottom-color:rgba(74,222,128,.2);background:linear-gradient(90deg,rgba(74,222,128,.12) 0%,rgba(74,222,128,.04) 50%,transparent 100%)}
+.rcard.pass.eu .rcard-top{background:linear-gradient(90deg,rgba(167,139,250,.12) 0%,rgba(167,139,250,.04) 50%,transparent 100%)}
+.rcard.pass::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),rgba(74,222,128,.3));border-radius:var(--rl) var(--rl) 0 0}
+.rcard.pass.eu::before{background:linear-gradient(90deg,var(--euro),rgba(167,139,250,.3))}
+.rticker{font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
 .rcard.pass .rticker{color:var(--accent)}
 .rcard.pass.eu .rticker{color:var(--euro)}
-.rname{font-size:11px;color:var(--muted);margin-top:2px}
+.rname{font-size:11px;color:var(--muted);margin-top:3px}
+.rsector{font-size:9px;padding:2px 7px;border-radius:3px;background:var(--surface3);color:var(--muted);font-weight:500;letter-spacing:.03em;white-space:nowrap}
 .rscore{font-family:var(--display);font-size:22px;font-weight:800}
 .s-pass{color:var(--accent)}.s-pass-eu{color:var(--euro)}.s-warn{color:var(--warn)}.s-fail{color:var(--muted)}
 .pbadge{font-size:10px;padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:inline-block;margin-top:4px}
@@ -790,6 +794,7 @@ async function runScan(tickers, isDelta, prevWL=[]) {
           stockData[t].ocf          = d.ocf;
           stockData[t].buyback      = d.buyback;
           stockData[t].nextEarnings = d.nextEarnings;
+          if(d.sector) stockData[t].sector = d.sector;
           // Calculate P/FCF from free cashflow and market cap proxy
           if(d.freeCashflow && d.freeCashflow > 0 && stockData[t].price) {
             // Use shares * price / FCF as P/FCF proxy
@@ -890,10 +895,17 @@ function buildCard(ticker, score, critResults, data, activeCrit, item) {
     return `<div class="chip ${r.pass?(isEu?'hit eu':'hit'):'miss'}"><div class="cdot ${r.pass?(isEu?'dy-eu':'dy'):'dn'}"></div><span style="font-weight:500">${c.label}</span><span style="color:var(--muted);margin-left:4px">${r.val}</span></div>`;
   }).join('');
   const wl = getWL(); const inWl = wl.some(w=>w.ticker===ticker&&w.market===market);
+  const sectorBadge = data.sector ? `<span class="rsector">${data.sector}</span>` : '';
   card.innerHTML = `
     <div class="rcard-top">
-      <div><div class="rticker">${ticker}</div><div class="rname">${data.companyName||''} ${data.exchange?'· '+data.exchange:''}</div></div>
-      <div style="text-align:right"><div class="rscore ${sc}">${score}<span style="font-size:11px;color:var(--muted)">✓</span>${item.missing>0?`<span style="font-size:11px;color:var(--warn)"> +${item.missing}~</span>`:""}<span style="font-size:13px;color:var(--muted)">/${activeCrit.length}</span></div><span class="pbadge ${bc}">${bt}</span></div>
+      <div>
+        <div class="rticker">${ticker}${isPass ? '<span style="font-size:14px">⚡</span>' : ''}</div>
+        <div class="rname">${data.companyName||''} ${sectorBadge}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="rscore ${sc}">${score}<span style="font-size:13px;color:var(--muted)">/${activeCrit.length}</span>${item.missing>0?`<span style="font-size:10px;color:var(--warn);margin-left:2px">+${item.missing}?</span>`:""}</div>
+        <span class="pbadge ${bc}">${bt}</span>
+      </div>
     </div>
     <div class="rcard-body">
       <div class="chips">${chips}</div>
