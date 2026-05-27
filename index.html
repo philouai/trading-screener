@@ -1021,7 +1021,7 @@ function buildCard(ticker, score, critResults, data, activeCrit, item) {
 /* ═══ WATCHLIST ═══ */
 function toggleWatch(ticker, name, price, low52, btn, score) {
   var wl = getWL();
-  var idx = wl.findIndex(function(w){return w.ticker===ticker&&w.market===market);
+  var idx = wl.findIndex(function(w){return w.ticker===ticker&&w.market===market;});
   if(idx>=0){ wl.splice(idx,1); btn.textContent='☆ Watch'; btn.classList.remove('on'); }
   else { wl.push({ticker,market,score,ts:Date.now(),companyName:name,price,low52}); btn.textContent='★ Watching'; btn.classList.add('on'); }
   setWL(wl); updateWLBadge();
