@@ -133,31 +133,35 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 
 /* RESULTS */
 .results-grid{display:flex;flex-direction:column;gap:10px}
-.rcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:border-color .2s}
-.rcard.pass{border-color:var(--accent-b)}
-.rcard.pass.eu{border-color:var(--euro-b)}
-.rcard-top{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px}
-.rticker{font-family:var(--display);font-size:18px;font-weight:700;letter-spacing:-.3px}
-.rname{font-size:10px;color:var(--muted);margin-top:1px}
-.rscore{font-family:var(--display);font-size:20px;font-weight:700}
+.rcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;margin-bottom:2px}
+.rcard.pass{border:2px solid var(--accent);background:linear-gradient(135deg,rgba(74,222,128,.06) 0%,var(--surface) 60%);box-shadow:0 0 24px rgba(74,222,128,.12),0 4px 16px rgba(0,0,0,.3)}
+.rcard.pass.eu{border:2px solid var(--euro);background:linear-gradient(135deg,rgba(167,139,250,.06) 0%,var(--surface) 60%);box-shadow:0 0 24px rgba(167,139,250,.12),0 4px 16px rgba(0,0,0,.3)}
+.rcard.possible{border:1px solid var(--warn-b);background:var(--surface)}
+.rcard-top{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px}
+.rcard.pass .rcard-top{border-bottom-color:rgba(74,222,128,.2)}
+.rticker{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.5px}
+.rcard.pass .rticker{color:var(--accent)}
+.rcard.pass.eu .rticker{color:var(--euro)}
+.rname{font-size:11px;color:var(--muted);margin-top:2px}
+.rscore{font-family:var(--display);font-size:22px;font-weight:800}
 .s-pass{color:var(--accent)}.s-pass-eu{color:var(--euro)}.s-warn{color:var(--warn)}.s-fail{color:var(--muted)}
-.pbadge{font-size:9px;padding:3px 7px;border-radius:3px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;display:inline-block;margin-top:4px}
-.pb-pass{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-b)}
-.pb-pass-eu{background:var(--euro-dim);color:var(--euro);border:1px solid var(--euro-b)}
+.pbadge{font-size:10px;padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:inline-block;margin-top:4px}
+.pb-pass{background:var(--accent);color:#0d0f12;box-shadow:0 2px 8px rgba(74,222,128,.3)}
+.pb-pass-eu{background:var(--euro);color:#0d0f12;box-shadow:0 2px 8px rgba(167,139,250,.3)}
 .pb-warn{background:var(--warn-dim);color:var(--warn);border:1px solid var(--warn-b)}
 .pb-fail{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
-.rcard-body{padding:12px 16px}
-.chips{display:flex;flex-wrap:wrap;gap:5px}
-.chip{display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;font-size:10px}
-.chip.hit{background:var(--accent-dim);border:1px solid var(--accent-b)}
+.rcard-body{padding:12px 18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;font-size:10px;font-weight:500}
+.chip.hit{background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35)}
 .chip.hit.eu{background:var(--euro-dim);border:1px solid var(--euro-b)}
-.chip.miss{background:var(--surface2);border:1px solid var(--border2);opacity:.5}
-.chip.nd{background:var(--surface2);border:1px dashed var(--border2);opacity:.3}
-.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.chip.miss{background:var(--surface2);border:1px solid var(--border2);opacity:.45}
+.chip.nd{background:var(--surface2);border:1px dashed var(--border2);opacity:.25}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .dy{background:var(--accent2)}.dy-eu{background:var(--euro)}.dn{background:var(--border3)}
-.rmeta{margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
+.rmeta{margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);padding-top:8px;border-top:1px solid var(--border)}
 .rmeta strong{color:var(--text2)}
-.watch-btn{margin-left:auto;padding:4px 10px;background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all .15s}
+.watch-btn{margin-left:auto;padding:5px 12px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s}
 .watch-btn:hover{color:var(--gold);border-color:var(--gold)}
 .watch-btn.on{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
 
@@ -266,7 +270,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
             <span class="thresh-lbl">min pass</span>
             <div class="thresh-track">
               <div class="thresh-fill" id="tf"></div>
-              <input type="range" min="1" max="7" value="5" id="ts" oninput="updateThresh()">
+              <input type="range" min="1" max="8" value="5" id="ts" oninput="updateThresh()">
             </div>
             <span class="thresh-val" id="tv">5 / 7</span>
           </div>
@@ -362,6 +366,12 @@ const CRITERIA = [
     score: d => d.profitMargin != null
       ? { pass: d.profitMargin > 0.05, missing: false, val:`Margin: ${(d.profitMargin*100).toFixed(1)}%` }
       : { pass: null, missing: true, val:'No data' } },
+  { id:'c12', label:'Not in freefall', diff:'med', desc:'Price not down >40% vs 52wk high',
+    score: d => (d.price != null && d.high52 != null)
+      ? (() => { const drop=(d.high52-d.price)/d.high52; return {pass: drop < 0.40, missing:false, val:`-${(drop*100).toFixed(0)}% from high`}; })()
+      : (d.price != null && d.pctFromHigh != null)
+        ? (() => { return {pass: d.pctFromHigh < 0.40, missing:false, val:`-${(d.pctFromHigh*100).toFixed(0)}% from high`}; })()
+        : { pass: null, missing: true, val:'No data' } },
   { id:'c9', label:'Earnings ≤ 30 days', diff:'med', desc:'Next earnings within 30 days',
     score: d => d.nextEarnings
       ? (() => { const days=Math.round((new Date(d.nextEarnings)-Date.now())/86400000); return {pass:days>=0&&days<=30, missing:false, val:days>=0?`In ${days}d`:`${Math.abs(days)}d ago`}; })()
@@ -868,7 +878,9 @@ function buildCard(ticker, score, critResults, data, activeCrit, item) {
   item = item || {optimistic: score, missing: 0};
   const isPass = score >= threshold, isEu = market==='eu';
   const card = document.createElement('div');
-  card.className = `rcard${isPass?' pass':''}${isEu&&isPass?' eu':''}`;
+  const isPossibleCard = !isPass && item.optimistic >= threshold;
+  card.className = `rcard${isPass?' pass':''}${isEu&&isPass?' eu':''}${isPossibleCard?' possible':''}`;
+  
   const sc = isPass?(isEu?'s-pass-eu':'s-pass'):score>=threshold-2?'s-warn':'s-fail';
   const bc = isPass?(isEu?'pb-pass-eu':'pb-pass'):score>=threshold-2?'pb-warn':'pb-fail';
   const bt = isPass?'PASS':score>=threshold-2?'NEAR':'FAIL';
