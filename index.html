@@ -389,7 +389,48 @@ let threshold = 5;
 let scanning = false;
 
 const getCache = () => { try { return JSON.parse(localStorage.getItem('sbc')||'{}'); } catch(e){return {};} };
-const setCache = c => { try { localStorage.setItem('sbc', JSON.stringify(c)); } catch(e){} };
+const setCache = c => {
+  try {
+    // Only store essential fields per stock to avoid localStorage quota
+    const slim = {};
+    Object.keys(c).forEach(market => {
+      slim[market] = {};
+      Object.keys(c[market]).forEach(t => {
+        const d = c[market][t];
+        slim[market][t] = {
+          price: d.price, low52: d.low52, high52: d.high52,
+          pe: d.pe, fwdPE: d.fwdPE,
+          profitMargin: d.profitMargin, revGrowth: d.revGrowth,
+          shortPct: d.shortPct, nextEarnings: d.nextEarnings,
+          companyName: d.companyName, sector: d.sector,
+          pctFromLow: d.pctFromLow, pctFromHigh: d.pctFromHigh,
+          ts: d.ts
+        };
+      });
+    });
+    localStorage.setItem('sbc', JSON.stringify(slim));
+  } catch(e) {
+    // If quota exceeded, only cache the candidates (near 52wk low)
+    try {
+      const mini = {};
+      Object.keys(c).forEach(market => {
+        mini[market] = {};
+        Object.keys(c[market]).forEach(t => {
+          const d = c[market][t];
+          const pct = (d.price && d.low52) ? (d.price-d.low52)/d.low52 : 1;
+          if(pct <= 0.30) mini[market][t] = {
+            price: d.price, low52: d.low52, high52: d.high52,
+            fwdPE: d.fwdPE, profitMargin: d.profitMargin,
+            revGrowth: d.revGrowth, shortPct: d.shortPct,
+            nextEarnings: d.nextEarnings, companyName: d.companyName,
+            sector: d.sector, ts: d.ts
+          };
+        });
+      });
+      localStorage.setItem('sbc', JSON.stringify(mini));
+    } catch(e2) { console.warn('Cache full, skipping'); }
+  }
+};
 const getWL = () => { try { return JSON.parse(localStorage.getItem('sbw')||'[]'); } catch(e){return[];} };
 const setWL = w => { try { localStorage.setItem('sbw', JSON.stringify(w)); } catch(e){} };
 const getWorker = () => localStorage.getItem('sbworker') || 'https://screener-proxy.philippeaichomier.workers.dev';
@@ -429,13 +470,12 @@ function setMarket(m) {
   document.getElementById('empty-msg').textContent = 'Set up your Worker URL, then run a scan.';
   document.getElementById('right-col').innerHTML = `<div class="empty"><div class="ei">◎</div><p id="empty-msg">Set up your Worker URL, then run a scan.</p></div>`;
   document.querySelectorAll('.nav-tab.active,.nav-tab.active-eu').forEach(t=>{t.classList.remove('active','active-eu');t.classList.add(m==='eu'?'active-eu':'active');});
-  refreshCacheStatus();
   setProg(100);
 
-  // ── AUTO-SYNC RESULTS TO GOOGLE SHEET (fire and forget, never blocks UI) ──
+  // ── AUTO-SYNC RESULTS TO GOOGLE SHEET (fire and forget) ──
   setTimeout(function() {
     autoSyncToSheet(scored, activeCrit).catch(function() {});
-  }, 100);
+  }, 500);
 }
 
 function renderCriteria() {
@@ -820,15 +860,16 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   }
   // Fill remaining phase bars
   setPhase(3, 100, '✓'); setPhase(4, 100, '✓');
-  setProg(98);
-
   // Fill remaining phase bars
   for(let pi=3;pi<5;pi++) setPhase(pi,100,'✓');
   setProg(95);
 
-  // ── SAVE TO CACHE ──
-  Object.keys(stockData).forEach(t => { mCache[t] = stockData[t]; });
-  setCache(allCache);
+  // ── SAVE TO CACHE (async, non-blocking) ──
+  setTimeout(function() {
+    Object.keys(stockData).forEach(t => { mCache[t] = stockData[t]; });
+    setCache(allCache);
+    refreshCacheStatus();
+  }, 200);
 
   // ── SCORE ALL STOCKS ──
   const scored = Object.keys(stockData).map(t => {
