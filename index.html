@@ -346,38 +346,47 @@ const EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,RAND.AS,ABN.
 // { pass: true,  val, missing: false } = confirmed pass ✓
 // { pass: false, val, missing: false } = confirmed fail ✗
 // { pass: null,  val, missing: true  } = missing data — optimistically included ~
-const CRITERIA = [
+var CRITERIA = [
   { id:'c6', label:'High short interest', diff:'hard', desc:'Short % of float > 5%',
-    score: d => d.shortPct != null
-      ? { pass: d.shortPct > 0.05, missing: false, val:`Short: ${(d.shortPct*100).toFixed(1)}%` }
-      : { pass: null, missing: true, val:'No data' } },
+    score: function(d) {
+      if(d.shortPct != null) return { pass: d.shortPct > 0.05, missing: false, val:'Short: ' + (d.shortPct*100).toFixed(1) + '%' };
+      return { pass: null, missing: true, val:'No data' };
+    }},
   { id:'c3', label:'Buyback signal', diff:'hard', desc:'Free cash flow positive (buyback capacity)',
-    score: d => d.freeCashflow != null
-      ? { pass: d.freeCashflow > 0, missing: false, val:`FCF: $${(d.freeCashflow/1e9).toFixed(2)}B` }
-      : { pass: null, missing: true, val:'No data' } },
+    score: function(d) {
+      if(d.freeCashflow != null) return { pass: d.freeCashflow > 0, missing: false, val:'FCF: $' + (d.freeCashflow/1e9).toFixed(2) + 'B' };
+      return { pass: null, missing: true, val:'No data' };
+    }},
   { id:'c8', label:'P/E compressed', diff:'hard', desc:'Forward P/E below 25x',
-    score: d => {
-      const pe = d.fwdPE || d.pe;
-      return pe != null && pe > 0
-        ? { pass: pe < 25, missing: false, val:`P/E: ${pe.toFixed(1)}x` }
-        : { pass: null, missing: true, val:'No data' };
-    } },
+    score: function(d) {
+      var pe = d.fwdPE || d.pe;
+      if(pe != null && pe > 0) return { pass: pe < 25, missing: false, val:'P/E: ' + pe.toFixed(1) + 'x' };
+      return { pass: null, missing: true, val:'No data' };
+    }},
   { id:'c11', label:'Revenue growing', diff:'med', desc:'Revenue YoY growth > 0%',
-    score: d => d.revGrowth != null
-      ? { pass: d.revGrowth > 0, missing: false, val:`Rev: +${(d.revGrowth*100).toFixed(1)}%` }
-      : { pass: null, missing: true, val:'No data' } },
+    score: function(d) {
+      if(d.revGrowth != null) return { pass: d.revGrowth > 0, missing: false, val:'Rev: +' + (d.revGrowth*100).toFixed(1) + '%' };
+      return { pass: null, missing: true, val:'No data' };
+    }},
   { id:'c4', label:'Strong fundamentals', diff:'med', desc:'Profit margin > 5%',
-    score: d => d.profitMargin != null
-      ? { pass: d.profitMargin > 0.05, missing: false, val:`Margin: ${(d.profitMargin*100).toFixed(1)}%` }
-      : { pass: null, missing: true, val:'No data' } },
-  { id:'c9', label:'Earnings ≤ 30 days', diff:'med', desc:'Next earnings within 30 days',
-    score: d => d.nextEarnings
-      ? (() => { const days=Math.round((new Date(d.nextEarnings)-Date.now())/86400000); return {pass:days>=0&&days<=30, missing:false, val:days>=0?`In ${days}d`:`${Math.abs(days)}d ago`}; })()
-      : { pass: null, missing: true, val:'No data' } },
+    score: function(d) {
+      if(d.profitMargin != null) return { pass: d.profitMargin > 0.05, missing: false, val:'Margin: ' + (d.profitMargin*100).toFixed(1) + '%' };
+      return { pass: null, missing: true, val:'No data' };
+    }},
+  { id:'c9', label:'Earnings <= 30 days', diff:'med', desc:'Next earnings within 30 days',
+    score: function(d) {
+      if(!d.nextEarnings) return { pass: null, missing: true, val:'No data' };
+      var days = Math.round((new Date(d.nextEarnings) - Date.now()) / 86400000);
+      return { pass: days >= 0 && days <= 30, missing: false, val: days >= 0 ? 'In ' + days + 'd' : Math.abs(days) + 'd ago' };
+    }},
   { id:'c1', label:'Near 52-week low', diff:'easy', desc:'Price within 20% of 52wk low',
-    score: d => (d.price != null && d.low52 != null)
-      ? { pass: (d.price-d.low52)/d.low52 <= 0.20, missing: false, val:`+${((d.price-d.low52)/d.low52*100).toFixed(1)}% vs 52wk low` }
-      : { pass: null, missing: true, val:'No data' } }
+    score: function(d) {
+      if(d.price != null && d.low52 != null) {
+        var pct = (d.price - d.low52) / d.low52;
+        return { pass: pct <= 0.20, missing: false, val: '+' + (pct*100).toFixed(1) + '% vs 52wk low' };
+      }
+      return { pass: null, missing: true, val:'No data' };
+    }}
 ];
 
 /* ═══ STATE ═══ */
@@ -718,7 +727,11 @@ async function startDelta() {
 async function runScan(tickers, isDelta, prevWL) {
   if(!prevWL) prevWL = [];
   var rc = document.getElementById('right-col');
-  const activeCrit = CRITERIA.filter(c=>document.querySelector(`.crit-row[data-id="${c.id}"]`)?.classList.contains('on'));
+  const activeCrit = CRITERIA.filter(function(c) {
+    var el = document.querySelector('[data-id="' + c.id + '"]');
+    if(!el) return true;
+    return el.classList.contains('on');
+  })
   const isEu = market === 'eu';
 
   // Build progress UI
