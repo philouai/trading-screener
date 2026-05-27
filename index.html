@@ -134,17 +134,14 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 /* RESULTS */
 .results-grid{display:flex;flex-direction:column;gap:10px}
 .rcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;margin-bottom:2px}
-.rcard.pass{border:2px solid var(--accent);background:linear-gradient(135deg,rgba(74,222,128,.06) 0%,var(--surface) 60%);box-shadow:0 0 24px rgba(74,222,128,.12),0 4px 16px rgba(0,0,0,.3)}
-.rcard.pass.eu{border:2px solid var(--euro);background:linear-gradient(135deg,rgba(167,139,250,.06) 0%,var(--surface) 60%);box-shadow:0 0 24px rgba(167,139,250,.12),0 4px 16px rgba(0,0,0,.3)}
-.rcard.possible{border:1px solid var(--warn-b);background:var(--surface)}
-.rcard-top{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px;position:relative}
-.rcard.pass .rcard-top{border-bottom-color:rgba(74,222,128,.2);background:linear-gradient(90deg,rgba(74,222,128,.12) 0%,rgba(74,222,128,.04) 50%,transparent 100%)}
-.rcard.pass.eu .rcard-top{background:linear-gradient(90deg,rgba(167,139,250,.12) 0%,rgba(167,139,250,.04) 50%,transparent 100%)}
-.rcard.pass::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),rgba(74,222,128,.3));border-radius:var(--rl) var(--rl) 0 0}
-.rcard.pass.eu::before{background:linear-gradient(90deg,var(--euro),rgba(167,139,250,.3))}
-.rticker{font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
-.rcard.pass .rticker{color:var(--accent)}
-.rcard.pass.eu .rticker{color:var(--euro)}
+.rcard.pass{border:1px solid rgba(74,222,128,.4)}
+.rcard.pass.eu{border:1px solid rgba(167,139,250,.4)}
+.rcard.possible{border:1px solid var(--warn-b)}
+.rcard-top{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative}
+.rcard.pass .rcard-top{background:linear-gradient(135deg,#1a3a1a 0%,#0f2010 40%,#0d1a0d 100%);border-bottom:1px solid rgba(74,222,128,.25)}
+.rcard.pass.eu .rcard-top{background:linear-gradient(135deg,#1e1a3a 0%,#150f2a 40%,#100d1a 100%);border-bottom:1px solid rgba(167,139,250,.25)}
+.rcard-top{border-bottom:1px solid var(--border)}
+.rticker{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.5px}
 .rname{font-size:11px;color:var(--muted);margin-top:3px}
 .rsector{font-size:9px;padding:2px 7px;border-radius:3px;background:var(--surface3);color:var(--muted);font-weight:500;letter-spacing:.03em;white-space:nowrap}
 .rscore{font-family:var(--display);font-size:22px;font-weight:800}
@@ -902,14 +899,15 @@ function buildCard(ticker, score, critResults, data, activeCrit, item) {
   }).join('');
   const wl = getWL(); const inWl = wl.some(w=>w.ticker===ticker&&w.market===market);
   const sectorBadge = data.sector ? `<span class="rsector">${data.sector}</span>` : '';
+  const passTextColor = isPass ? (isEu ? 'color:#c4b5fd' : 'color:#4ade80') : '';
   card.innerHTML = `
     <div class="rcard-top">
       <div>
-        <div class="rticker">${ticker}${isPass ? '<span style="font-size:14px">⚡</span>' : ''}</div>
+        <div class="rticker" style="${passTextColor}">${ticker}</div>
         <div class="rname">${data.companyName||''} ${sectorBadge}</div>
       </div>
       <div style="text-align:right">
-        <div class="rscore ${sc}">${score}<span style="font-size:13px;color:var(--muted)">/${activeCrit.length}</span>${item.missing>0?`<span style="font-size:10px;color:var(--warn);margin-left:2px">+${item.missing}?</span>`:""}</div>
+        <div class="rscore ${sc}">${score}<span style="font-size:13px;opacity:.6">/${activeCrit.length}</span>${item.missing>0?`<span style="font-size:10px;color:var(--warn);margin-left:2px">+${item.missing}?</span>`:""}</div>
         <span class="pbadge ${bc}">${bt}</span>
       </div>
     </div>
