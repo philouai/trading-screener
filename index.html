@@ -339,68 +339,49 @@ async function runScan() {
     document.getElementById("ph-cnt-"+i).textContent=cnt;
   }
 
-  // ── PHASE 1: Load Google Sheet ──
+  // ── PHASE 1: All tickers (no sheet needed) ──
   var stockData = {};
-  log("Phase 1: Loading Google Sheet data&hellip;");
-  try {
-    // Try direct fetch first, fall back to Worker if blocked
-    var resp;
-    try {
-      resp = await fetch(SHEET, {signal: AbortSignal.timeout(15000)});
-    } catch(e1) {
-      // Fallback: route through Worker (for local testing)
-      resp = await fetch(WORKER+"?action=sheet", {signal: AbortSignal.timeout(20000)});
-    }
-    var csv = await resp.text();
-    // If we got HTML (Google consent page), try Worker
-    if(csv.trim().startsWith("<")) {
-      var resp2 = await fetch(WORKER+"?action=sheet", {signal: AbortSignal.timeout(20000)});
-      csv = await resp2.text();
-    }
-    if(csv.trim().startsWith("<")) throw new Error("Sheet returned HTML - check sheet is published publicly");
-    var rows = csv.trim().split("\n");
-    var keys = rows[0].split(",");
-    log("Sheet keys sample: "+rows[1].split(",").slice(0,3).join(",")+' (total: '+(rows.length-1)+')', "active");
-    for(var ri=1; ri<rows.length; ri++) {
-      var cols = rows[ri].split(",");
-      var t = (cols[0]||"").trim().replace(/"/g,"");
-      if(!t) continue;
-      var price = parseFloat(cols[2])||null;
-      var low52 = parseFloat(cols[3])||null;
-      var high52= parseFloat(cols[4])||null;
-      var pe    = parseFloat(cols[5])||null;
-      if(price&&price>0) stockData[t] = {price:price, low52:low52, high52:high52, pe:pe};
-    }
-    log("Google Sheet: "+Object.keys(stockData).length+" stocks loaded.", "done");
-    setPhase(0, 100, Object.keys(stockData).length);
-    setProg(15);
-  } catch(e) {
-    log("Sheet error: "+e.message, "err");
-  }
-
-  // ── PHASE 2: Pre-filter (within 25% of 52wk low) ──
-  var candidates = [];
-  Object.keys(stockData).forEach(function(t) {
-    var d = stockData[t];
-    if(d.price && d.low52 && d.low52>0) {
-      if((d.price-d.low52)/d.low52 <= 0.25) candidates.push(t);
-    }
-  });
-  log("Pre-filter: "+candidates.length+" of "+Object.keys(stockData).length+" stocks within 25% of 52wk low", "done");
-  setPhase(1, 100, candidates.length+"/"+Object.keys(stockData).length);
-  setProg(25);
+  var candidates = list();
+  log("Phase 1: Loaded "+candidates.length+" tickers", "done");
+  setPhase(0, 100, candidates.length);
+  setProg(15);
   if(!scanning) return;
 
-  // ── PHASE 3: Yahoo Finance for fundamentals ──
+  // ── PHASE 2: Pre-filter from cache (use cached 52wk low if available) ──
   var allCache = getCache();
   if(!allCache[market]) allCache[market]={};
   var mCache = allCache[market];
 
-  var needYF = candidates.filter(function(t) { return !mCache[t] || mCache[t].profitMargin==null; });
-  var fromCache = candidates.filter(function(t) { return mCache[t] && mCache[t].profitMargin!=null; });
+  // Pre-fill stockData from cache
+  candidates.forEach(function(t) {
+    if(mCache[t]) stockData[t] = mCache[t];
+  });
+
+  // Filter to candidates near 52wk low (only if we have cached price data)
+  var hasCacheData = Object.keys(mCache).length > 0;
+  var prefiltered;
+  if(hasCacheData) {
+    prefiltered = candidates.filter(function(t) {
+      var d = mCache[t];
+      if(!d || !d.price || !d.low52 || d.low52<=0) return true; // no cache = include
+      return (d.price - d.low52) / d.low52 <= 0.30; // within 30% of 52wk low
+    });
+    log("Pre-filter: "+prefiltered.length+" candidates ("+Object.keys(mCache).length+" cached)", "done");
+  } else {
+    prefiltered = candidates;
+    log("No cache — scanning all "+prefiltered.length+" tickers", "done");
+  }
+  setPhase(1, 100, prefiltered.length+"/"+candidates.length);
+  setProg(25);
+  if(!scanning) return;
+
+  // ── PHASE 3: Yahoo Finance for fundamentals ──
+  var needYF = prefiltered.filter(function(t) { return !mCache[t] || mCache[t].profitMargin==null; });
+  var fromCache = prefiltered.filter(function(t) { return mCache[t] && mCache[t].profitMargin!=null; });
 
   // Merge cached data
   fromCache.forEach(function(t) {
+    if(!stockData[t]) stockData[t] = {};
     Object.assign(stockData[t], mCache[t]);
   });
 
@@ -420,12 +401,16 @@ async function runScan() {
           var d = data[t];
           if(!d) return;
           if(!stockData[t]) stockData[t]={};
+          if(!stockData[t]) stockData[t] = {};
           if(d.profitMargin!=null) stockData[t].profitMargin = d.profitMargin;
           if(d.revGrowth!=null)    stockData[t].revGrowth    = d.revGrowth;
           if(d.shortPct!=null)     stockData[t].shortPct     = d.shortPct;
           if(d.forwardPE!=null)    stockData[t].fwdPE        = d.forwardPE;
           if(d.freeCashflow!=null) stockData[t].freeCashflow = d.freeCashflow;
           if(d.nextEarnings)       stockData[t].nextEarnings = d.nextEarnings;
+          if(d.week52Low!=null)    stockData[t].low52        = d.week52Low;
+          if(d.price!=null)        stockData[t].price        = d.price;
+          if(d.companyName)        stockData[t].companyName  = d.companyName;
           stockData[t].ts = Date.now();
           mCache[t] = stockData[t];
         });
