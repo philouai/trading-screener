@@ -892,8 +892,15 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     });
     stockData[t].critResults = critResults;
     return { ticker:t, score, critResults, data:d };
-  }).filter(x => x.score >= 1)
-    .sort((a,b) => b.score-a.score);
+  }).filter(x => {
+    if(x.score >= 1) return true;
+    // Also show stocks near 52wk low even with no confirmed passes yet
+    const d = x.data;
+    if(d.price && d.low52 && d.low52 > 0) {
+      return (d.price - d.low52) / d.low52 <= 0.25;
+    }
+    return false;
+  }).sort((a,b) => b.score-a.score);
 
   // ── AUTO-SAVE PASSING TO WATCHLIST (non-blocking) ──
   setTimeout(function() {
