@@ -881,32 +881,51 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   setProg(100);
 
   // ── SCORE ALL STOCKS ──
-  const scored = Object.keys(stockData).map(t => {
-    const d = stockData[t];
-    let score = 0;
-    const critResults = {};
-    activeCrit.forEach(c => {
-      const r = c.score(d);
-      critResults[c.id] = r;
-      if(r?.pass===true) score++;
-    });
-    stockData[t].critResults = critResults;
-    return { ticker:t, score, critResults, data:d };
-  }).filter(x => {
-    if(x.score >= 1) return true;
-    // Also show stocks near 52wk low even with no confirmed passes yet
-    const d = x.data;
-    if(d.price && d.low52 && d.low52 > 0) {
-      return (d.price - d.low52) / d.low52 <= 0.25;
+  // Rules: count confirmed passes. If confirmed >= threshold → PASS.
+  // If confirmed + missing >= threshold → POSSIBLE (show it, user decides).
+  // Missing data never blocks a stock from showing if it could still pass.
+  var allTickers = Object.keys(stockData);
+  var scored = [];
+  for (var si = 0; si < allTickers.length; si++) {
+    var t = allTickers[si];
+    var d = stockData[t];
+    var confirmed = 0;
+    var missing = 0;
+    var failed = 0;
+    var critResults = {};
+    for (var ci = 0; ci < activeCrit.length; ci++) {
+      var crit = activeCrit[ci];
+      var r = crit.score(d);
+      critResults[crit.id] = r;
+      if (r && r.pass === true) confirmed++;
+      else if (r && r.missing === true) missing++;
+      else failed++;
     }
-    return false;
-  }).sort((a,b) => b.score-a.score);
+    stockData[t].critResults = critResults;
+    var optimistic = confirmed + missing;
+    // Show stock if: confirmed passes >= threshold (PASS)
+    // OR confirmed + missing >= threshold (POSSIBLE — could still pass)
+    if (confirmed >= threshold || optimistic >= threshold) {
+      scored.push({
+        ticker: t, score: confirmed, optimistic: optimistic,
+        missing: missing, failed: failed, critResults: critResults, data: d
+      });
+    }
+  }
+  // Sort: confirmed passes first, then by optimistic
+  scored.sort(function(a, b) {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.optimistic - a.optimistic;
+  });
 
   // ── AUTO-SAVE PASSING TO WATCHLIST (non-blocking) ──
   setTimeout(function() {
-    const passing = scored.filter(x=>x.score>=threshold);
-    const wl = getWL().filter(w=>w.market!==market);
-    passing.forEach(x => wl.push({ticker:x.ticker, market, score:x.score, ts:Date.now(), companyName:x.data.companyName||'', price:x.data.price||0, low52:x.data.low52||0}));
+    var passing = scored.filter(function(x) { return x.score >= threshold; });
+    var wl = getWL().filter(function(w) { return w.market !== market; });
+    passing.forEach(function(x) {
+      wl.push({ticker:x.ticker, market:market, score:x.score, ts:Date.now(),
+        companyName:x.data.companyName||'', price:x.data.price||0, low52:x.data.low52||0});
+    });
     setWL(wl); updateWLBadge();
   }, 50);
   log('Done — ' + scored.length + ' stocks shown.', 'done');
@@ -915,9 +934,9 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   rc.innerHTML = '';
   const sb = document.createElement('div'); sb.className='sbar';
   sb.innerHTML = `
-    <div class="ss"><span class="sv" style="color:var(${isEu?'--euro':'--accent'})">${scored.filter(x=>x.score>=threshold).length}</span><span class="sl">Confirmed</span></div>
+    <div class="ss"><span class="sv" style="color:var(${isEu?'--euro':'--accent'})">${scored.filter(function(x){return x.score>=threshold;}).length}</span><span class="sl">Confirmed</span></div>
     <div class="ssep"></div>
-    <div class="ss"><span class="sv" style="color:var(--warn)">${scored.filter(x=>x.score<threshold&&x.score>=threshold-2).length}</span><span class="sl">Possible</span></div>
+    <div class="ss"><span class="sv" style="color:var(--warn)">${scored.filter(function(x){return x.score<threshold&&x.optimistic>=threshold;}).length}</span><span class="sl">Possible</span></div>
     <div class="ssep"></div>
     <div class="ss"><span class="sv">${Object.keys(stockData).length}</span><span class="sl">Screened</span></div>
     <div class="ssep"></div>
@@ -931,7 +950,7 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     rc.innerHTML += `<div class="empty"><div class="ei">◎</div><p>No stocks met ${Math.max(threshold-2,1)}+ criteria.<br>Try lowering the threshold.</p></div>`;
   } else {
     const grid = document.createElement('div'); grid.className='results-grid';
-    scored.forEach(item => grid.appendChild(buildCard(item.ticker,item.score,item.critResults,item.data,activeCrit,item)));
+    scored.forEach(function(item) { grid.appendChild(buildCard(item.ticker,item.score,item.critResults,item.data,activeCrit,item)); });
     rc.appendChild(grid);
   }
   refreshCacheStatus();
