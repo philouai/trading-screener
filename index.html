@@ -454,7 +454,7 @@ const fmtNum = n => n >= 1e9 ? (n/1e9).toFixed(1)+'B' : n >= 1e6 ? (n/1e6).toFix
 const list = () => market==='us' ? RUSSELL2000 : EURO;
 
 /* ═══ INIT ═══ */
-window.onload = () => {
+window.onload = function() {
   renderCriteria();
   updateThresh();
   const w = getWorker();
@@ -494,15 +494,15 @@ function setMarket(m) {
 }
 
 function renderCriteria() {
-  const list = document.getElementById('crit-list');
-  const dc = {hard:'d-hard',med:'d-med',easy:'d-easy'};
+  var critList = document.getElementById('crit-list');
+  var dc = {hard:'d-hard',med:'d-med',easy:'d-easy'};
   list.innerHTML = '';
   CRITERIA.forEach((c,i) => {
-    const row = document.createElement('div');
+    var row = document.createElement('div');
     row.className = 'crit-row on'; row.dataset.id = c.id;
     row.onclick = () => toggleCrit(c.id);
     row.innerHTML = `<div class="ccheck"></div><div class="ci"><div class="cl">${c.label}</div><div class="cd">${c.desc}</div></div><span class="dbadge ${dc[c.diff]}">${c.diff}</span><span class="cord">#${i+1}</span>`;
-    list.appendChild(row);
+    critList.appendChild(row);
   });
   updateCritCount();
 }
