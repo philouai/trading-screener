@@ -429,7 +429,16 @@ const setCache = c => {
   }
 };
 const getWL = () => { try { return JSON.parse(localStorage.getItem('sbw')||'[]'); } catch(e){return[];} };
-const setWL = w => { try { localStorage.setItem('sbw', JSON.stringify(w)); } catch(e){} };
+const setWL = w => {
+  try {
+    localStorage.setItem('sbw', JSON.stringify(w));
+  } catch(e) {
+    // If quota exceeded, only keep top 50
+    try {
+      localStorage.setItem('sbw', JSON.stringify(w.slice(0,50)));
+    } catch(e2) {}
+  }
+};
 const getWorker = () => localStorage.getItem('sbworker') || 'https://screener-proxy.philippeaichomier.workers.dev';
 const setWorker = u => localStorage.setItem('sbworker', u);
 const fmtNum = n => n >= 1e9 ? (n/1e9).toFixed(1)+'B' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n.toFixed(0);
@@ -869,6 +878,8 @@ async function runScan(tickers, isDelta, prevWL=[]) {
     refreshCacheStatus();
   }, 200);
 
+  setProg(100);
+
   // ── SCORE ALL STOCKS ──
   const scored = Object.keys(stockData).map(t => {
     const d = stockData[t];
@@ -884,13 +895,13 @@ async function runScan(tickers, isDelta, prevWL=[]) {
   }).filter(x => x.score >= 1)
     .sort((a,b) => b.score-a.score);
 
-  // ── AUTO-SAVE PASSING TO WATCHLIST ──
-  const passing = scored.filter(x=>x.score>=threshold); // only confirmed passes auto-save
-  const wl = getWL().filter(w=>w.market!==market);
-  passing.forEach(x => wl.push({ticker:x.ticker, market, score:x.score, ts:Date.now(), companyName:x.data.companyName||'', price:x.data.price||0, low52:x.data.low52||0}));
-  setWL(wl); updateWLBadge();
-
-  setProg(100);
+  // ── AUTO-SAVE PASSING TO WATCHLIST (non-blocking) ──
+  setTimeout(function() {
+    const passing = scored.filter(x=>x.score>=threshold);
+    const wl = getWL().filter(w=>w.market!==market);
+    passing.forEach(x => wl.push({ticker:x.ticker, market, score:x.score, ts:Date.now(), companyName:x.data.companyName||'', price:x.data.price||0, low52:x.data.low52||0}));
+    setWL(wl); updateWLBadge();
+  }, 50);
   log(`Done — ${passing.length} stocks passed (${scored.length} shown including near-misses).`, 'done');
   await new Promise(r=>setTimeout(r,500));
 
