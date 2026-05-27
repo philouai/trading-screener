@@ -280,7 +280,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 
       <button class="btn-run us" id="run-btn" onclick="startScan()">Run full Russell 2000 scan</button>
       <button class="btn-sec" id="delta-btn" onclick="startDelta()" style="display:none">↑ Re-scan: new stocks only</button>
-      <button class="btn-sec" onclick="clearCache()" id="clear-btn" style="display:none">Clear cache &amp; reset</button>
+      <button class="btn-sec" onclick="clearCache()" id="clear-btn">Clear cache &amp; reset</button>
       <button class="btn-sec" onclick="loadFromSheet()" style="margin-top:6px">📱 Load saved results</button>
     </div>
 
@@ -533,12 +533,12 @@ function updateThresh() {
 }
 
 function refreshCacheStatus() {
-  const c = getCache()[market]||{};
-  const n = Object.keys(c).length;
-  const el = document.getElementById('cache-status');
-  const db = document.getElementById('delta-btn');
-  const cb = document.getElementById('clear-btn');
-  if(n===0){ el.textContent='No cache loaded.'; db.style.display='none'; cb.style.display='none'; }
+  var c = getCache()[market]||{};
+  var n = Object.keys(c).length;
+  var el = document.getElementById('cache-status');
+  var db = document.getElementById('delta-btn');
+  var cb = document.getElementById('clear-btn');
+  if(n===0){ el.textContent='No cache loaded.'; db.style.display='none'; cb.style.display='block'; }
   else {
     const ts = Math.max(...Object.values(c).map(v=>v.ts||0));
     const age = Math.round((Date.now()-ts)/60000);
@@ -695,7 +695,12 @@ async function startScan() {
   if(!getWorker()){ alert('Paste your Worker URL in the API Setup panel first.'); return; }
   scanning = true;
   document.getElementById('run-btn').textContent = '⏹ Cancel';
-  await runScan(list(), false);
+  try {
+    await runScan(list(), false);
+  } catch(e) {
+    alert('Scan error: ' + e.message);
+    console.error(e);
+  }
   scanning = false;
   document.getElementById('run-btn').textContent = market==='us'?'Run full Russell 2000 scan':'Run full Euro Stoxx scan';
 }
