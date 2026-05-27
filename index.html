@@ -727,16 +727,16 @@ async function startDelta() {
 async function runScan(tickers, isDelta, prevWL) {
   if(!prevWL) prevWL = [];
   var rc = document.getElementById('right-col');
-  const activeCrit = CRITERIA.filter(function(c) {
+  var activeCrit = CRITERIA.filter(function(c) {
     var el = document.querySelector('[data-id="' + c.id + '"]');
     if(!el) return true;
     return el.classList.contains('on');
   })
-  const isEu = market === 'eu';
+  var isEu = market === 'eu';
 
   // Build progress UI
   rc.innerHTML = '';
-  const pw = document.createElement('div'); pw.className = 'prog-wrap';
+  var pw = document.createElement('div'); pw.className = 'prog-wrap';
   pw.innerHTML = `
     <div class="prog-hdr"><span class="prog-title">${isDelta?'Delta scan':'Full scan'} — ${market.toUpperCase()}</span><span class="prog-pct" id="pp">0%</span></div>
     <div class="prog-track"><div class="prog-fill${isEu?' eu':''}" id="pf"></div></div>
@@ -745,42 +745,42 @@ async function runScan(tickers, isDelta, prevWL) {
   `;
   rc.appendChild(pw);
 
-  const plog = document.getElementById('plog');
-  const pf = document.getElementById('pf');
-  const pp = document.getElementById('pp');
-  const pbars = document.getElementById('phase-bars');
+  var plog = document.getElementById('plog');
+  var pf = document.getElementById('pf');
+  var pp = document.getElementById('pp');
+  var pbars = document.getElementById('phase-bars');
 
   // Phase bar rows
-  const phases = ['Google Sheet','pre-filter','fundamentals (AV)','short interest (top only)','metrics'];
-  phases.forEach((p,i) => {
-    const row = document.createElement('div'); row.className = 'phase-row';
+  var phases = ['Google Sheet','pre-filter','fundamentals (AV)','short interest (top only)','metrics'];
+  phases.forEach(function(p,i) {
+    var row = document.createElement('div'); row.className = 'phase-row';
     row.innerHTML = `<span class="phase-lbl" id="ph-lbl-${i}">Phase ${i+1}: ${p}</span><div class="phase-bar-wrap"><div class="phase-bar${isEu?' eu':''}" id="ph-bar-${i}" style="width:0%"></div></div><span class="phase-cnt" id="ph-cnt-${i}">—</span>`;
     pbars.appendChild(row);
   });
 
-  const log = (msg, state='active') => {
-    const line = document.createElement('div');
+  var log = function(msg, state) { if(!state) state='active';
+    var line = document.createElement('div');
     line.className = `pline ${state}`;
     line.innerHTML = `<div class="pdot ${state==='done'?'d':state==='err'?'e':'a'}"></div>${msg}`;
     plog.appendChild(line); plog.scrollTop = plog.scrollHeight;
     return line;
   };
 
-  const setProg = (pct) => { pf.style.width=pct+'%'; pp.textContent=pct+'%'; };
-  const setPhase = (i, pct, cnt) => {
+  var setProg = function(pct) { pf.style.width=pct+'%'; pp.textContent=pct+'%'; };
+  var setPhase = function(i, pct, cnt) {
     document.getElementById(`ph-bar-${i}`).style.width = pct+'%';
     document.getElementById(`ph-cnt-${i}`).textContent = cnt;
   };
 
   // ── Load cache ──
-  const allCache = getCache();
+  var allCache = getCache();
   if(!allCache[market]) allCache[market]={};
-  const mCache = allCache[market];
-  const stockData = {}; // ticker → merged data object
+  var mCache = allCache[market];
+  var stockData = {}; // ticker → merged data object
 
   // Pre-fill from cache
-  Object.keys(mCache).forEach(t => { if(tickers.includes(t)) stockData[t] = {...mCache[t]}; });
-  const needFetch = tickers.filter(t => !mCache[t]);
+  Object.keys(mCache).forEach(function(t) { if(tickers.includes(t)) stockData[t] = {...mCache[t]}; });
+  var needFetch = tickers.filter(function(t){return !mCache[t];});
 
   if(needFetch.length === 0) {
     log('All data loaded from cache.', 'done');
@@ -789,17 +789,17 @@ async function runScan(tickers, isDelta, prevWL) {
   }
 
   // ── PHASE 1: Load Google Sheet data (price, 52wk low/high, PE) ──
-  const sheetUrl = 'configured';
+  var sheetUrl = 'configured';
   if(scanning) {
-    const line = log('Phase 1: Loading Google Sheet data…', 'active');
+    var line = log('Phase 1: Loading Google Sheet data…', 'active');
     try {
-      const sheetResp = await workerFetch('sheet', '', sheetUrl);
-      const sheetData = sheetResp.data || sheetResp;
-      const allTickers = list();
-      const sheetKeys = Object.keys(sheetData);
+      var sheetResp = await workerFetch('sheet', '', sheetUrl);
+      var sheetData = sheetResp.data || sheetResp;
+      var allTickers = list();
+      var sheetKeys = Object.keys(sheetData);
       log('Sheet keys sample: ' + sheetKeys.slice(0,3).join(',') + ' (total: ' + sheetKeys.length + ')', 'active');
-      allTickers.forEach(t => {
-        const d = sheetData[t];
+      allTickers.forEach(function(t) {
+        var d = sheetData[t];
         if(!d) return;
         if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
         stockData[t].price = d.price;
@@ -809,7 +809,7 @@ async function runScan(tickers, isDelta, prevWL) {
         stockData[t].fwdPE = d.pe;
         stockData[t].companyName = d.name;
       });
-      const loaded = Object.keys(sheetData).length;
+      var loaded = Object.keys(sheetData).length;
       setPhase(0, 100, loaded + ' stocks');
       line.className='pline done'; line.querySelector('.pdot').className='pdot d';
       log('Google Sheet: ' + loaded + ' stocks loaded.', 'done');
@@ -819,11 +819,11 @@ async function runScan(tickers, isDelta, prevWL) {
 
   // ── PHASE 2: Pre-filter — only fetch AV data for stocks near 52wk low ──
   // This saves API calls — only stocks within 25% of 52wk low get full AV data
-  const avKey = 'VREMNI755NX1LKE7';
-  const candidates = needFetch.filter(t => {
-    const d = stockData[t];
+  var avKey = 'VREMNI755NX1LKE7';
+  var candidates = needFetch.filter(function(t) {
+    var d = stockData[t];
     if(!d || !d.price || !d.low52) return false; // no sheet data, skip
-    const pct = (d.price - d.low52) / d.low52;
+    var pct = (d.price - d.low52) / d.low52;
     return pct >= 0 && pct <= 0.25; // within 25% of 52wk low (pct is decimal e.g. 0.09)
   });
   log('Pre-filter: ' + candidates.length + ' of ' + needFetch.length + ' stocks within 25% of 52wk low', 'active');
@@ -833,21 +833,21 @@ async function runScan(tickers, isDelta, prevWL) {
   // ── PHASE 3: Yahoo Finance — all fundamentals, no rate limits ──
   // Fetches profitMargin, revGrowth, shortPct, OCF, buyback, earnings in one call per stock
   if(candidates.length > 0 && scanning) {
-    const needYF = candidates.filter(t => !mCache[t] || mCache[t].profitMargin == null);
-    const fromCache = candidates.length - needYF.length;
-    const line3 = log('Phase 3: Yahoo Finance — ' + needYF.length + ' stocks (' + fromCache + ' cached)…', 'active');
-    const BATCH = 20; // Yahoo with crumb handles larger batches
-    let fetched = fromCache;
-    for(let i=0; i<needYF.length; i+=BATCH) {
+    var needYF = candidates.filter(function(t){return !mCache[t] || mCache[t].profitMargin == null;});
+    var fromCache = candidates.length - needYF.length;
+    var line3 = log('Phase 3: Yahoo Finance — ' + needYF.length + ' stocks (' + fromCache + ' cached)…', 'active');
+    var BATCH = 20; // Yahoo with crumb handles larger batches
+    var fetched = fromCache;
+    for(var i=0; i<needYF.length; i+=BATCH) {
       if(!scanning) break;
-      const batch = needYF.slice(i, i+BATCH);
+      var batch = needYF.slice(i, i+BATCH);
       try {
-        const base = getWorker();
-        const url = base + '?action=yf_batch&symbols=' + encodeURIComponent(batch.join(','));
-        const r = await fetch(url, {signal: AbortSignal.timeout(45000)});
-        const data = await r.json();
-        batch.forEach(t => {
-          const d = data[t];
+        var base = getWorker();
+        var url = base + '?action=yf_batch&symbols=' + encodeURIComponent(batch.join(','));
+        var r = await fetch(url, {signal: AbortSignal.timeout(45000)});
+        var data = await r.json();
+        batch.forEach(function(t) {
+          var d = data[t];
           if(!d || d.error) return;
           if(!stockData[t]) stockData[t] = { critResults:{}, ts: Date.now() };
           stockData[t].profitMargin = d.profitMargin;
@@ -870,24 +870,22 @@ async function runScan(tickers, isDelta, prevWL) {
         });
         fetched += batch.length;
       } catch(e) { log('Batch error: ' + e.message, 'err'); }
-      const pct = Math.round(fetched / candidates.length * 100);
+      var pct = Math.round(fetched / candidates.length * 100);
       setPhase(2, pct, fetched + '/' + candidates.length);
       setProg(35 + Math.round(pct * 0.55));
       // Brief pause between batches
-      if(i + BATCH < needYF.length) await new Promise(r => setTimeout(r, 800));
+      if(i + BATCH < needYF.length) await new Promise(function(r){setTimeout(r, 800);});
     }
     line3.className='pline done'; line3.querySelector('.pdot').className='pdot d';
     log('Yahoo Finance data loaded.', 'done');
   }
   // Fill remaining phase bars
-  setPhase(3, 100, '✓'); setPhase(4, 100, '✓');
-  // Fill remaining phase bars
-  for(let pi=3;pi<5;pi++) setPhase(pi,100,'✓');
+  for(var pi=3;pi<5;pi++) setPhase(pi,100,'✓');
   setProg(95);
 
   // ── SAVE TO CACHE (async, non-blocking) ──
   setTimeout(function() {
-    Object.keys(stockData).forEach(t => { mCache[t] = stockData[t]; });
+    Object.keys(stockData).forEach(function(t) { mCache[t] = stockData[t]; });
     setCache(allCache);
     refreshCacheStatus();
   }, 200);
@@ -978,22 +976,22 @@ async function runScan(tickers, isDelta, prevWL) {
 function buildCard(ticker, score, critResults, data, activeCrit, item) {
   item = item || {score: score, optimistic: score, missing: 0, failed: 0};
   if(item.optimistic == null) item.optimistic = item.score;
-  const isPass = score >= threshold, isEu = market==='eu';
-  const card = document.createElement('div');
-  const isPossibleCard = !isPass && item.optimistic >= threshold;
+  var isPass = score >= threshold, isEu = market==='eu';
+  var card = document.createElement('div');
+  var isPossibleCard = !isPass && item.optimistic >= threshold;
   card.className = `rcard${isPass?' pass':''}${isEu&&isPass?' eu':''}${isPossibleCard?' possible':''}`;
   
-  const sc = isPass?(isEu?'s-pass-eu':'s-pass'):score>=threshold-2?'s-warn':'s-fail';
-  const bc = isPass?(isEu?'pb-pass-eu':'pb-pass'):score>=threshold-2?'pb-warn':'pb-fail';
-  const bt = isPass?'PASS':score>=threshold-2?'NEAR':'FAIL';
-  const chips = activeCrit.map(c => {
-    const r = critResults[c.id];
+  var sc = isPass?(isEu?'s-pass-eu':'s-pass'):score>=threshold-2?'s-warn':'s-fail';
+  var bc = isPass?(isEu?'pb-pass-eu':'pb-pass'):score>=threshold-2?'pb-warn':'pb-fail';
+  var bt = isPass?'PASS':score>=threshold-2?'NEAR':'FAIL';
+  var chips = activeCrit.map(function(c) {
+    var r = critResults[c.id];
     if(!r) return `<div class="chip nd"><div class="cdot" style="background:var(--border3)"></div><span>${c.label}</span><span style="color:var(--muted);margin-left:4px">n/a</span></div>`;
     return `<div class="chip ${r.pass?(isEu?'hit eu':'hit'):'miss'}"><div class="cdot ${r.pass?(isEu?'dy-eu':'dy'):'dn'}"></div><span style="font-weight:500">${c.label}</span><span style="color:var(--muted);margin-left:4px">${r.val}</span></div>`;
   }).join('');
-  const wl = getWL(); const inWl = wl.some(w=>w.ticker===ticker&&w.market===market);
-  const sectorBadge = data.sector ? `<span class="rsector">${data.sector}</span>` : '';
-  const passTextColor = isPass ? (isEu ? 'color:#c4b5fd' : 'color:#4ade80') : '';
+  var wl = getWL(); var inWl = wl.some(function(w){return w.ticker===ticker&&w.market===market;});
+  var sectorBadge = data.sector ? `<span class="rsector">${data.sector}</span>` : '';
+  var passTextColor = isPass ? (isEu ? 'color:#c4b5fd' : 'color:#4ade80') : '';
   card.innerHTML = `
     <div class="rcard-top">
       <div>
@@ -1019,42 +1017,42 @@ function buildCard(ticker, score, critResults, data, activeCrit, item) {
 
 /* ═══ WATCHLIST ═══ */
 function toggleWatch(ticker, name, price, low52, btn, score) {
-  let wl = getWL();
-  const idx = wl.findIndex(w=>w.ticker===ticker&&w.market===market);
+  var wl = getWL();
+  var idx = wl.findIndex(function(w){return w.ticker===ticker&&w.market===market);
   if(idx>=0){ wl.splice(idx,1); btn.textContent='☆ Watch'; btn.classList.remove('on'); }
   else { wl.push({ticker,market,score,ts:Date.now(),companyName:name,price,low52}); btn.textContent='★ Watching'; btn.classList.add('on'); }
   setWL(wl); updateWLBadge();
 }
 
 function updateWLBadge() {
-  const n = getWL().length;
+  var n = getWL().length;
   document.getElementById('wbadge').textContent = n;
   document.getElementById('wbadge').className = 'nbadge'+(market==='eu'?' nbadge-eu':'');
 }
 
 function refreshWL() {
-  const wl = getWL();
-  const us = wl.filter(w=>w.market==='us').length;
-  const eu = wl.filter(w=>w.market==='eu').length;
+  var wl = getWL();
+  var us = wl.filter(function(w){return w.market==='us';}).length;
+  var eu = wl.filter(function(w){return w.market==='eu';}).length;
   document.getElementById('wl-us').textContent=us;
   document.getElementById('wl-eu').textContent=eu;
   document.getElementById('wl-tot').textContent=wl.length;
-  const ts = wl.length ? Math.max(...wl.map(w=>w.ts||0)) : 0;
+  var ts = wl.length ? Math.max(...wl.map(function(w){return w.ts||0;})) : 0;
   document.getElementById('wl-date').textContent = ts ? new Date(ts).toLocaleDateString() : '—';
-  const cards = document.getElementById('wl-cards');
-  const empty = document.getElementById('wl-empty');
+  var cards = document.getElementById('wl-cards');
+  var empty = document.getElementById('wl-empty');
   cards.innerHTML='';
   if(wl.length===0){empty.style.display='block';return;}
   empty.style.display='none';
-  ['us','eu'].forEach(m=>{
-    const items=wl.filter(w=>w.market===m);
+  ['us','eu'].forEach(function(m){
+    var items=wl.filter(function(w){return w.market===m;});
     if(!items.length) return;
-    const hdr=document.createElement('div');
+    var hdr=document.createElement('div');
     hdr.style='font-family:var(--display);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px 2px';
     hdr.textContent=m==='us'?'🇺🇸 US Stocks':'🇪🇺 European Stocks';
     cards.appendChild(hdr);
-    items.sort((a,b)=>b.score-a.score).forEach(w=>{
-      const card=document.createElement('div');
+    items.sort(function(a,b){return b.score-a.score;}).forEach(function(w){
+      var card=document.createElement('div');
       card.className=`rcard pass${m==='eu'?' eu':''}`;
       card.style.marginBottom='8px';
       card.innerHTML=`<div class="rcard-top"><div><div class="rticker">${w.ticker}</div><div class="rname">${w.companyName||''}</div></div><div style="text-align:right"><div class="rscore ${m==='eu'?'s-pass-eu':'s-pass'}">${w.score}<span style="font-size:13px;color:var(--muted)">/7</span></div><span class="pbadge ${m==='eu'?'pb-pass-eu':'pb-pass'}">WATCHING</span></div></div><div class="rcard-body"><div class="rmeta">${w.price?`Price: <strong>$${(+w.price).toFixed(2)}</strong>`:''} Added: <strong>${new Date(w.ts).toLocaleDateString()}</strong><button class="watch-btn on" onclick="removeWL('${w.ticker}','${m}')">★ Remove</button></div></div>`;
@@ -1064,7 +1062,7 @@ function refreshWL() {
 }
 
 function removeWL(ticker, m) {
-  setWL(getWL().filter(w=>!(w.ticker===ticker&&w.market===m)));
+  setWL(getWL().filter(function(w){return !(w.ticker===ticker&&w.market===m);}));
   updateWLBadge(); refreshWL();
 }
 
