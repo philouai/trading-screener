@@ -893,6 +893,8 @@ async function runScan(tickers, isDelta, prevWL) {
   setProg(100);
 
   // ── SCORE ALL STOCKS ──
+  log('Starting score of ' + Object.keys(stockData).length + ' stocks with ' + activeCrit.length + ' criteria', 'active');
+  try {
   var allTickers = Object.keys(stockData);
   var scored = [];
   for (var si = 0; si < allTickers.length; si++) {
@@ -923,6 +925,7 @@ async function runScan(tickers, isDelta, prevWL) {
   });
 
   log('Scored: ' + scored.length + ' stocks. Top: ' + (scored[0]?scored[0].ticker+'('+scored[0].score+'/7)':'none'), 'done');
+  } catch(scoreErr) { log('SCORE ERROR: ' + scoreErr.message + ' at ' + scoreErr.stack, 'err'); }
 
   // ── SAVE WATCHLIST ──
   setTimeout(function() {
