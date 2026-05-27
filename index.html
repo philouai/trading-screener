@@ -343,8 +343,21 @@ async function runScan() {
   var stockData = {};
   log("Phase 1: Loading Google Sheet data&hellip;");
   try {
-    var resp = await fetch(SHEET);
+    // Try direct fetch first, fall back to Worker if blocked
+    var resp;
+    try {
+      resp = await fetch(SHEET, {signal: AbortSignal.timeout(15000)});
+    } catch(e1) {
+      // Fallback: route through Worker (for local testing)
+      resp = await fetch(WORKER+"?action=sheet", {signal: AbortSignal.timeout(20000)});
+    }
     var csv = await resp.text();
+    // If we got HTML (Google consent page), try Worker
+    if(csv.trim().startsWith("<")) {
+      var resp2 = await fetch(WORKER+"?action=sheet", {signal: AbortSignal.timeout(20000)});
+      csv = await resp2.text();
+    }
+    if(csv.trim().startsWith("<")) throw new Error("Sheet returned HTML - check sheet is published publicly");
     var rows = csv.trim().split("\n");
     var keys = rows[0].split(",");
     log("Sheet keys sample: "+rows[1].split(",").slice(0,3).join(",")+' (total: '+(rows.length-1)+')', "active");
