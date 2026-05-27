@@ -166,21 +166,22 @@ var EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,SAP.DE,SIE.DE,
 var WORKER = "https://screener-proxy.philippeaichomier.workers.dev";
 var SHEET  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQsjX6cNMm4IIUviJMo7945DzA5yS6KCzMVMmkAC6d5Hy_eH36HUraZpYV_9Xmb2PGE5iHBq-7zOwa/pub?gid=1304628110&single=true&output=csv";
 
+function sf(n, d) { var v = parseFloat(n); return isFinite(v) ? v.toFixed(d||1) : "0"; }
 var CRITERIA = [
   { id:"c6", label:"High short interest", diff:"hard", desc:"Short % of float > 5%",
-    score: function(d) { if(d.shortPct==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.shortPct>0.05,missing:false,val:"Short: "+(d.shortPct*100).toFixed(1)+"%"}; } },
+    score: function(d) { if(d.shortPct==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.shortPct>0.05,missing:false,val:"Short: "+sf(parseFloat(d.shortPct)*100)+"%"}; } },
   { id:"c3", label:"Buyback signal", diff:"hard", desc:"Free cash flow positive",
-    score: function(d) { if(d.freeCashflow==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.freeCashflow>0,missing:false,val:"FCF: $"+(d.freeCashflow/1e9).toFixed(2)+"B"}; } },
+    score: function(d) { if(d.freeCashflow==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.freeCashflow>0,missing:false,val:"FCF: $"+sf(parseFloat(d.freeCashflow)/1e9,2)+"B"}; } },
   { id:"c8", label:"P/E compressed", diff:"hard", desc:"Forward P/E below 25x",
-    score: function(d) { var pe=d.fwdPE||d.pe; if(pe==null||pe<=0) return {pass:null,missing:true,val:"No data"}; return {pass:pe<25,missing:false,val:"P/E: "+pe.toFixed(1)+"x"}; } },
+    score: function(d) { var pe=d.fwdPE||d.pe; if(pe==null||pe<=0) return {pass:null,missing:true,val:"No data"}; return {pass:pe<25,missing:false,val:"P/E: "+sf(pe)+"x"}; } },
   { id:"c11", label:"Revenue growing", diff:"med", desc:"Revenue YoY growth > 0%",
-    score: function(d) { if(d.revGrowth==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.revGrowth>0,missing:false,val:"Rev: +"+(d.revGrowth*100).toFixed(1)+"%"}; } },
+    score: function(d) { if(d.revGrowth==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.revGrowth>0,missing:false,val:"Rev: +"+sf(parseFloat(d.revGrowth)*100)+"%"}; } },
   { id:"c4", label:"Strong fundamentals", diff:"med", desc:"Profit margin > 5%",
-    score: function(d) { if(d.profitMargin==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.profitMargin>0.05,missing:false,val:"Margin: "+(d.profitMargin*100).toFixed(1)+"%"}; } },
+    score: function(d) { if(d.profitMargin==null) return {pass:null,missing:true,val:"No data"}; return {pass:d.profitMargin>0.05,missing:false,val:"Margin: "+sf(parseFloat(d.profitMargin)*100)+"%"}; } },
   { id:"c9", label:"Earnings <= 30 days", diff:"med", desc:"Next earnings within 30 days",
     score: function(d) { if(!d.nextEarnings) return {pass:null,missing:true,val:"No data"}; var days=Math.round((new Date(d.nextEarnings)-Date.now())/86400000); return {pass:days>=0&&days<=30,missing:false,val:days>=0?"In "+days+"d":Math.abs(days)+"d ago"}; } },
   { id:"c1", label:"Near 52-week low", diff:"easy", desc:"Price within 20% of 52wk low",
-    score: function(d) { if(d.price==null||d.low52==null) return {pass:null,missing:true,val:"No data"}; var pct=(d.price-d.low52)/d.low52; return {pass:pct<=0.20,missing:false,val:"+"+( pct*100).toFixed(1)+"% vs 52wk low"}; } }
+    score: function(d) { if(d.price==null||d.low52==null) return {pass:null,missing:true,val:"No data"}; var pct=(d.price-d.low52)/d.low52; return {pass:pct<=0.20,missing:false,val:"+"+( sf(pct*100))+"% vs 52wk low"}; } }
 ];
 
 var market = "us";
@@ -279,7 +280,7 @@ function clearCache() {
 async function startScan() {
   if(scanning) { scanning=false; return; }
   scanning = true;
-  document.getElementById("run-btn").textContent = "&#9209; Cancel";
+  document.getElementById("run-btn").textContent = "⏹ Cancel";
   try {
     await runScan();
   } catch(e) {
@@ -530,8 +531,8 @@ function buildCard(item, activeCrit) {
     '<div class="rcard-body">'+
     '<div class="chips">'+chipsHtml+'</div>'+
     '<div class="rmeta">'+
-    (d.price?'Price: <strong>$'+d.price.toFixed(2)+'</strong>':'')+
-    (d.low52?' 52wk low: <strong>$'+d.low52.toFixed(2)+'</strong>':'')+
+    (d.price&&!isNaN(parseFloat(d.price))?'Price: <strong>$'+sf(d.price,2)+'</strong>':'')+
+    (d.low52&&!isNaN(parseFloat(d.low52))?' 52wk low: <strong>$'+sf(d.low52,2)+'</strong>':'')+
     (d.nextEarnings?' Earnings: <strong style="color:var(--warn)">'+d.nextEarnings+'</strong>':'')+
     '<button class="wbtn'+(inWl?" on":"")+('" data-ticker="'+item.ticker+'" data-score="'+item.score+'" onclick="toggleWatchBtn(this)">')+(inWl?"&#9733; Watching":"&#9734; Watch")+'</button>'+
     '</div></div>';
@@ -572,7 +573,7 @@ function refreshWL() {
     card.className="rcard pass"; card.style.marginBottom="8px";
     card.innerHTML='<div class="rcard-top"><div><div class="rticker">'+w.ticker+'</div><div class="rname">'+(w.companyName||"")+'</div></div>'+
       '<div style="text-align:right"><div class="rscore s-pass">'+w.score+'<span style="font-size:13px;color:var(--mut)">/7</span></div><span class="pbadge pb-pass">WATCHING</span></div></div>'+
-      '<div class="rcard-body"><div class="rmeta">'+(w.price?'Price: <strong>$'+(+w.price).toFixed(2)+'</strong> ':'')+
+      '<div class="rcard-body"><div class="rmeta">'+(w.price?'Price: <strong>$'+sf(w.price,2)+'</strong> ':'')+
       'Added: <strong>'+new Date(w.ts).toLocaleDateString()+'</strong>'+
       '<button class="wbtn on" data-ticker="'+w.ticker+'" data-market="'+w.market+'" onclick="removeWLBtn(this)">&#9733; Remove</button></div></div>';
     cards.appendChild(card);
