@@ -319,123 +319,61 @@ function clearPicks() {
 
 function refreshPicks() {
   var picks = getPicks();
-  document.getElementById("pick-cnt").textContent = picks.length;
-  var ts = 0; picks.forEach(function(p) { if(p.ts>ts) ts=p.ts; });
-  document.getElementById("pick-date").textContent = ts ? new Date(ts).toLocaleDateString() : "—";
+  var cntEl = document.getElementById("pick-cnt");
+  var dateEl = document.getElementById("pick-date");
+  if(cntEl) cntEl.textContent = picks.length;
+  var ts = 0; picks.forEach(function(p){if(p.ts>ts)ts=p.ts;});
+  if(dateEl) dateEl.textContent = ts ? new Date(ts).toLocaleDateString() : "—";
   var cards = document.getElementById("pick-cards");
   var empty = document.getElementById("pick-empty");
+  if(!cards) return;
   cards.innerHTML = "";
-  if(picks.length===0) { empty.style.display="block"; return; }
-  empty.style.display="none";
-  try { picks.sort(function(a,b) { return (b.score||0)-(a.score||0); }).forEach(function(p) {
+  if(picks.length===0){ if(empty) empty.style.display="block"; return; }
+  if(empty) empty.style.display="none";
+  var sC={"Technology":"#60a5fa","Healthcare":"#34d399","Financial Services":"#fbbf24","Consumer Cyclical":"#f87171","Consumer Defensive":"#a78bfa","Industrials":"#94a3b8","Communication Services":"#fb923c"};
+  picks.sort(function(a,b){return (b.score||0)-(a.score||0);}).forEach(function(p){
     var scoreClass = p.score===7?" score7":p.score===6?" score6":"";
     var card = document.createElement("div");
     card.className = "rcard pass picked"+scoreClass;
     card.style.marginBottom = "8px";
-    var sectorColors={"Technology":"#60a5fa","Healthcare":"#34d399","Financial Services":"#fbbf24","Consumer Cyclical":"#f87171","Consumer Defensive":"#a78bfa","Industrials":"#94a3b8","Communication Services":"#fb923c"};
-    var secBadge = p.sector ? '<span style="font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.06);color:'+(sectorColors[p.sector]||"var(--mut)")+';margin-left:8px">'+p.sector+'</span>' : "";
-    var peStr = p.fwdPE ? " &middot; PE <strong>"+sf(p.fwdPE)+"x</strong>" : "";
-    var shortStr = p.shortPct ? "Short: <strong>"+sf(p.shortPct*100)+"%</strong> &middot; " : "";
-    var analystStr = p.analystBuyPct ? ' &middot; <span style="color:'+(p.analystBuyPct>=70?"var(--acc)":"var(--warn)")+'">★ '+p.analystBuyPct+'% buy</span>' : "";
-    card.innerHTML = '<div class="rcard-top"><div>'+
-      '<div class="rticker">★ '+p.ticker+'</div>'+
-      '<div class="rname">'+(p.companyName||"")+secBadge+'</div></div>'+
-      '<div style="text-align:right;display:flex;align-items:flex-start;gap:6px">'+
-      '<div><div class="rscore s-pass">'+p.score+'<span style="font-size:13px;color:var(--mut)">/7</span></div></div>'+
+    // Build header
+    var top = document.createElement("div");
+    top.className = "rcard-top";
+    top.innerHTML =
+      '<div><div class="rticker">★ '+p.ticker+'</div>'+
+      '<div class="rname">'+(p.companyName||"")+
+      (p.sector?'<span style="font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.06);color:'+(sC[p.sector]||"var(--mut)")+';margin-left:8px">'+p.sector+'</span>':'')+
       '</div></div>'+
-      '<div class="rcard-body"><div class="rmeta">'+shortStr+(p.price?"$"+sf(p.price,2)+" &middot; ":"")+peStr+
-      (p.nextEarnings?' &middot; Earnings: <strong style="color:var(--warn)">'+p.nextEarnings+'</strong>':"")+analystStr+
-      ' &middot; Added: <strong>'+new Date(p.ts).toLocaleDateString()+'</strong></div></div>';
+      '<div style="text-align:right">'+
+      '<div class="rscore s-pass">'+p.score+'<span style="font-size:13px;color:var(--mut)">/7</span></div>'+
+      '</div>';
+    // Remove button - append after innerHTML so it sticks
+    var rb = document.createElement("button");
+    rb.className = "star-btn on"; rb.textContent = "★"; rb.title = "Remove";
+    rb.setAttribute("data-t", p.ticker);
+    rb.onclick = function(){ removePick(this.getAttribute("data-t")); };
+    top.querySelector('div[style*="text-align:right"]').appendChild(rb);
+    card.appendChild(top);
+    // Build body
+    var body = document.createElement("div");
+    body.className = "rcard-body";
+    var meta = [];
+    if(p.shortPct) meta.push('Short: <strong style="color:var(--dan)">'+sf(p.shortPct*100)+'%</strong>');
+    if(p.price) meta.push('$'+sf(p.price,2));
+    if(p.fwdPE) meta.push('PE: <strong>'+sf(p.fwdPE)+'x</strong>');
+    if(p.profitMargin) meta.push('Margin: <strong>'+sf(p.profitMargin*100)+'%</strong>');
+    if(p.nextEarnings){
+      var days=Math.round((new Date(p.nextEarnings)-Date.now())/86400000);
+      meta.push('Earnings: <strong style="color:'+(days>=0&&days<=30?"var(--warn)":"var(--mut)")+'">'+p.nextEarnings+(days>=0?" ("+days+"d)":"")+'</strong>');
+    }
+    if(p.analystBuyPct) meta.push('★ <span style="color:'+(p.analystBuyPct>=70?"var(--acc)":"var(--warn)")+'">'+p.analystBuyPct+'% buy</span>');
+    meta.push('Added: <strong>'+new Date(p.ts).toLocaleDateString()+'</strong>');
+    body.innerHTML = '<div class="rmeta">'+meta.join(' &middot; ')+'</div>';
+    card.appendChild(body);
     cards.appendChild(card);
   });
-  } catch(e) { console.error('refreshPicks error:', e); }
 }
 
-function toggleAdvanced() {
-  advancedMode = !advancedMode;
-  var btn = document.getElementById("advanced-btn");
-  var info = document.getElementById("advanced-info");
-  if(btn) {
-    btn.textContent = (advancedMode ? "▼" : "►") + " Advanced: " + (advancedMode ? "ON" : "OFF");
-    btn.style.color = advancedMode ? "var(--warn)" : "";
-    btn.style.borderColor = advancedMode ? "var(--wb)" : "";
-  }
-  if(info) info.style.display = advancedMode ? "block" : "none";
-  refreshWL(); // re-render watchlist with new thresholds
-}
-
-function getCache() { try { return JSON.parse(localStorage.getItem("sbc")||"{}"); } catch(e) { return {}; } }
-function setCache(c) { try { localStorage.setItem("sbc", JSON.stringify(c)); } catch(e) {} }
-function getWL() { try { return JSON.parse(localStorage.getItem("sbw")||"[]"); } catch(e) { return []; } }
-function setWL(w) { try { localStorage.setItem("sbw", JSON.stringify(w)); } catch(e) {} }
-function list() { return market==="us" ? RUSSELL2000 : EURO; }
-
-var mandatoryMode = false;
-
-function testConn() {
-  var inp = document.getElementById("worker-url");
-  var url = inp ? inp.value : WORKER;
-  if(url) localStorage.setItem("sbworker", url);
-  var msg = document.getElementById("conn-msg");
-  var dot = document.getElementById("conn-status");
-  if(msg) msg.textContent = "Testing...";
-  fetch(url+"?action=ping", {signal:AbortSignal.timeout(8000)})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(msg){msg.textContent=d.ok?"Connected: "+(d.msg||"OK"):"Error";msg.style.color=d.ok?"var(--acc)":"var(--dan)";}
-      if(dot){dot.innerHTML=d.ok?"● Connected":"● Error";dot.style.color=d.ok?"var(--acc)":"var(--dan)";}
-    })
-    .catch(function(e){
-      if(msg){msg.textContent="Failed: "+e.message;msg.style.color="var(--dan)";}
-    });
-}
-
-function toggleMandatory() {
-  mandatoryMode = !mandatoryMode;
-  var btn = document.getElementById("mandatory-btn");
-  var info = document.getElementById("mandatory-info");
-  if(btn) {
-    btn.textContent = "Mandatory: "+(mandatoryMode?"ON ✓":"OFF");
-    btn.style.color = mandatoryMode?"var(--warn)":"";
-    btn.style.borderColor = mandatoryMode?"var(--wb)":"";
-    btn.style.background = mandatoryMode?"var(--wdim)":"";
-  }
-  if(info) info.style.display = mandatoryMode?"block":"none";
-  var m6=document.getElementById("mand-c6");
-  var m9=document.getElementById("mand-c9");
-  if(m6) m6.style.display=mandatoryMode?"inline":"none";
-  if(m9) m9.style.display=mandatoryMode?"inline":"none";
-}
-
-
-function removePick(ticker) {
-  var pk = getPicks(); var idx=-1;
-  for(var i=0;i<pk.length;i++){if(pk[i].ticker===ticker){idx=i;break;}}
-  if(idx>=0){pk.splice(idx,1);setPicks(pk);updatePickBadge();refreshPicks();}
-  // Update stars in screener
-  var stars = document.querySelectorAll('[data-ticker="'+ticker+'"].star-btn');
-  for(var i=0;i<stars.length;i++){stars[i].textContent="☆";stars[i].classList.remove("on");}
-}
-
-function startAdvancedScan() {
-  // Advanced scan: short interest + earnings within 30d are MANDATORY
-  // then need 3+ from remaining 5 criteria
-  mandatoryMode = true;
-  var origThreshold = threshold;
-  threshold = 3; // need 3 from remaining 5 (short+earnings already mandatory)
-  // Update threshold display
-  var tv = document.getElementById("tv");
-  if(tv) tv.textContent = "3 / 5 (adv)";
-  startScan().then(function(){
-    mandatoryMode = false;
-    threshold = origThreshold;
-    var tv2 = document.getElementById("tv");
-    if(tv2) tv2.textContent = origThreshold+" / 7";
-  }).catch(function(){
-    mandatoryMode = false;
-    threshold = origThreshold;
-  });
-}
 
 function debugPicks() {
   var el = document.getElementById("picks-debug");
