@@ -172,8 +172,12 @@ nav{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 24px;disp
   <div class="wl-hdr">
     <div><div class="wl-title">My <span style="color:var(--gold)">Picks</span></div>
     <div style="font-size:11px;color:var(--mut);margin-top:4px">Your starred high-conviction setups</div></div>
-    <button class="btn-danger" onclick="clearPicks()">Clear all</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sec" onclick="debugPicks()" style="font-size:11px;padding:6px 12px">Debug</button>
+      <button class="btn-danger" onclick="clearPicks()">Clear all</button>
+    </div>
   </div>
+  <div id="picks-debug" style="display:none;background:#14171c;border:1px solid #252930;border-radius:8px;padding:12px;margin-bottom:12px;font-size:10px;font-family:monospace;color:#60a5fa;max-height:200px;overflow-y:auto"></div>
   <div class="ic-grid">
     <div class="ic"><div class="ic-n hl-gold" id="pick-cnt">0</div><div class="ic-l">Starred picks</div></div>
     <div class="ic"><div class="ic-n" id="pick-date" style="font-size:13px;margin-top:4px">&mdash;</div><div class="ic-l">Last starred</div></div>
@@ -323,7 +327,7 @@ function refreshPicks() {
   cards.innerHTML = "";
   if(picks.length===0) { empty.style.display="block"; return; }
   empty.style.display="none";
-  picks.sort(function(a,b) { return (b.score||0)-(a.score||0); }).forEach(function(p) {
+  try { picks.sort(function(a,b) { return (b.score||0)-(a.score||0); }).forEach(function(p) {
     var scoreClass = p.score===7?" score7":p.score===6?" score6":"";
     var card = document.createElement("div");
     card.className = "rcard pass picked"+scoreClass;
@@ -344,6 +348,7 @@ function refreshPicks() {
       ' &middot; Added: <strong>'+new Date(p.ts).toLocaleDateString()+'</strong></div></div>';
     cards.appendChild(card);
   });
+  } catch(e) { console.error('refreshPicks error:', e); }
 }
 
 function toggleAdvanced() {
@@ -430,6 +435,44 @@ function startAdvancedScan() {
     mandatoryMode = false;
     threshold = origThreshold;
   });
+}
+
+function debugPicks() {
+  var el = document.getElementById("picks-debug");
+  var picks = getPicks();
+  if(el.style.display === "block") { el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.innerHTML = "Raw picks (" + picks.length + "):<br>";
+  picks.forEach(function(p, i) {
+    el.innerHTML += "<br><strong>" + p.ticker + "</strong>: " + JSON.stringify(p).substring(0,200);
+  });
+  // Also try manual render
+  el.innerHTML += "<br><br>Attempting manual render...";
+  try {
+    var cards = document.getElementById("pick-cards");
+    var empty = document.getElementById("pick-empty");
+    el.innerHTML += "<br>pick-cards found: " + (cards ? "YES" : "NO");
+    el.innerHTML += "<br>pick-empty found: " + (empty ? "YES" : "NO");
+    if(picks.length > 0 && cards) {
+      cards.innerHTML = "";
+      if(empty) empty.style.display = "none";
+      picks.forEach(function(p) {
+        var d = document.createElement("div");
+        d.style.cssText = "background:#1c2028;border:1px solid #4ade80;border-radius:8px;padding:12px;margin-bottom:8px";
+        d.innerHTML = "<strong style='color:#4ade80;font-size:16px'>" + p.ticker + "</strong> &mdash; Score: " + p.score + "/7<br>" +
+          "<span style='color:#a0a8b8;font-size:11px'>" + (p.companyName||"") + "</span><br>" +
+          "<span style='color:#e8eaf0;font-size:11px'>" +
+          (p.shortPct ? "Short: " + (p.shortPct*100).toFixed(1) + "% | " : "") +
+          (p.price ? "$" + p.price.toFixed(2) + " | " : "") +
+          (p.nextEarnings ? "Earnings: " + p.nextEarnings : "") +
+          "</span>";
+        cards.appendChild(d);
+      });
+      el.innerHTML += "<br>Rendered " + picks.length + " picks manually.";
+    }
+  } catch(e) {
+    el.innerHTML += "<br>ERROR: " + e.message;
+  }
 }
 
 window.onload = function() {
