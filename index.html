@@ -214,6 +214,8 @@ var EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,SAP.DE,SIE.DE,
 
 
 var EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,SAP.DE,SIE.DE,ALV.DE,MUV2.DE,BMW.DE,MC.PA,OR.PA,TTE.PA,BNP.PA,NESN.SW,NOVN.SW,ROG.SW,AZN.L,HSBA.L,BP.L,ULVR.L,SAN.MC,ITX.MC,BBVA.MC,RACE.MI,ENI.MI,ENEL.MI".split(",");
+
+
 var WORKER = "https://screener-proxy.philippeaichomier.workers.dev";
 var SHEET  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQsjX6cNMm4IIUviJMo7945DzA5yS6KCzMVMmkAC6d5Hy_eH36HUraZpYV_9Xmb2PGE5iHBq-7zOwa/pub?gid=1304628110&single=true&output=csv";
 
@@ -235,7 +237,16 @@ var CRITERIA = [
     score: function(d) { if(d.price==null||d.low52==null) return {pass:null,missing:true,val:"No data"}; var pct=(d.price-d.low52)/d.low52; return {pass:pct<=0.20,missing:false,val:"+"+( sf(pct*100))+"% vs 52wk low"}; } }
 ];
 
+function getWorker() {
+  var inp = document.getElementById("worker-url");
+  return (inp && inp.value) ? inp.value : localStorage.getItem("sbworker") || WORKER;
+}
+
 function list() { return market==="us" ? RUSSELL2000 : EURO; }
+function getCache() { try { return JSON.parse(localStorage.getItem("sbc")||"{}"); } catch(e) { return {}; } }
+function setCache(c) { try { localStorage.setItem("sbc", JSON.stringify(c)); } catch(e) {} }
+function getWL() { try { return JSON.parse(localStorage.getItem("sbw")||"[]"); } catch(e) { return []; } }
+function setWL(w) { try { localStorage.setItem("sbw", JSON.stringify(w)); } catch(e) {} }
 var market = "us";
 var mandatoryMode = false;
 var threshold = 5;
@@ -262,198 +273,117 @@ function updateLockDisplay() {
   if(el){el.textContent=lockCount>0?lockCount+" mandatory":"";el.style.display=lockCount>0?"inline":"none";}
 }
 
-function getPicks() { try { return JSON.parse(localStorage.getItem("sbp")||"[]"); } catch(e) { return []; } }
-function setPicks(p) { try { localStorage.setItem("sbp", JSON.stringify(p)); } catch(e) {} }
+
+// ── SIMPLE PICKS: copy card HTML, save as strings ──
+function getSavedPicks() {
+  try { return JSON.parse(localStorage.getItem("sbp2")||"{}"); } catch(e) { return {}; }
+}
+function savePicks(obj) {
+  try { localStorage.setItem("sbp2", JSON.stringify(obj)); } catch(e) {}
+}
 
 function starCard(btn) {
   var ticker = btn.getAttribute("data-ticker");
-  var cache = (getCache()[market]||{})[ticker]||{};
-  var picks = getPicks();
-  var idx=-1; for(var i=0;i<picks.length;i++){if(picks[i].ticker===ticker){idx=i;break;}}
-  // Find score from watchlist or cache
-  var wlItem = null; var wl=getWL(); for(var j=0;j<wl.length;j++){if(wl[j].ticker===ticker){wlItem=wl[j];break;}}
-  var data = {
-    score: wlItem?wlItem.score:(cache.score||0),
-    companyName: cache.companyName||"", price: cache.price||0, low52: cache.low52||0,
-    shortPct: cache.shortPct||null, profitMargin: cache.profitMargin||null,
-    sector: cache.sector||"", nextEarnings: cache.nextEarnings||"",
-    fwdPE: cache.fwdPE||null, analystBuyPct: cache.analystBuyPct||null
-  };
-  togglePick(ticker, data, btn);
+  if(!ticker) return;
+  var picks = getSavedPicks();
+  var pickCards = document.getElementById("pick-cards");
+  var pickEmpty = document.getElementById("pick-empty");
+  var badge = document.getElementById("pickbadge");
+
+  if(picks[ticker]) {
+    // UNSTAR: remove from picks
+    delete picks[ticker];
+    savePicks(picks);
+    // Remove card from picks page
+    var existing = document.getElementById("pick-card-"+ticker);
+    if(existing) existing.remove();
+    // Reset all stars for this ticker
+    document.querySelectorAll('[data-ticker="'+ticker+'"].star-btn').forEach(function(b){
+      b.textContent="☆"; b.classList.remove("on");
+    });
+  } else {
+    // STAR: clone the card into picks
+    var sourceCard = btn.closest(".rcard");
+    if(!sourceCard) return;
+    var clone = sourceCard.cloneNode(true);
+    clone.id = "pick-card-"+ticker;
+    clone.classList.add("picked");
+    // Replace star button in clone with remove button
+    var cloneStar = clone.querySelector(".star-btn");
+    if(cloneStar) {
+      cloneStar.textContent = "★";
+      cloneStar.classList.add("on");
+      cloneStar.setAttribute("data-ticker", ticker);
+      cloneStar.onclick = function(){ starCard(this); };
+    }
+    if(pickCards) pickCards.appendChild(clone);
+    // Save HTML
+    picks[ticker] = clone.outerHTML;
+    savePicks(picks);
+    // Mark all stars for this ticker
+    document.querySelectorAll('[data-ticker="'+ticker+'"].star-btn').forEach(function(b){
+      b.textContent="★"; b.classList.add("on");
+    });
+  }
+
+  // Update count
+  var count = Object.keys(getSavedPicks()).length;
+  if(badge) badge.textContent = count;
+  if(pickEmpty) pickEmpty.style.display = count===0 ? "block" : "none";
 }
 
-function togglePick(ticker, data, starBtn) {
-  var picks = getPicks();
-  var idx = -1;
-  for(var i=0; i<picks.length; i++) { if(picks[i].ticker===ticker) { idx=i; break; } }
-  if(idx>=0) {
-    picks.splice(idx,1);
-    if(starBtn) { starBtn.textContent="☆"; starBtn.classList.remove("on"); }
-    // Remove picked class from card
-    if(starBtn && starBtn.closest) {
-      var card = starBtn.closest(".rcard");
-      if(card) card.classList.remove("picked");
+function loadSavedPicks() {
+  var picks = getSavedPicks();
+  var pickCards = document.getElementById("pick-cards");
+  var pickEmpty = document.getElementById("pick-empty");
+  var badge = document.getElementById("pickbadge");
+  if(!pickCards) return;
+  pickCards.innerHTML = "";
+  var count = Object.keys(picks).length;
+  if(count===0){ if(pickEmpty) pickEmpty.style.display="block"; return; }
+  if(pickEmpty) pickEmpty.style.display="none";
+  Object.keys(picks).forEach(function(ticker){
+    var div = document.createElement("div");
+    div.innerHTML = picks[ticker];
+    var card = div.firstElementChild;
+    if(!card) return;
+    card.id = "pick-card-"+ticker;
+    // Re-attach star button onclick
+    var sb = card.querySelector(".star-btn");
+    if(sb) {
+      sb.setAttribute("data-ticker", ticker);
+      sb.onclick = function(){ starCard(this); };
     }
-  } else {
-    picks.push({ticker:ticker, ts:Date.now(),
-      score:data.score||0, companyName:data.companyName||"",
-      price:data.price||0, low52:data.low52||0,
-      shortPct:data.shortPct||null, profitMargin:data.profitMargin||null,
-      sector:data.sector||"", nextEarnings:data.nextEarnings||"",
-      fwdPE:data.fwdPE||null, analystBuyPct:data.analystBuyPct||null
-    });
-    if(starBtn) { starBtn.textContent="★"; starBtn.classList.add("on"); }
-    if(starBtn && starBtn.closest) {
-      var card = starBtn.closest(".rcard");
-      if(card) card.classList.add("picked");
-    }
-  }
-  setPicks(picks);
-  updatePickBadge();
-  var _pp=document.getElementById("page-pick");if(_pp&&_pp.classList.contains("vis")) refreshPicks();
+    pickCards.appendChild(card);
+  });
+  if(badge) badge.textContent = count;
 }
 
 function updatePickBadge() {
-  var pb=document.getElementById("pickbadge"); if(!pb) return;
-  pb.textContent = getPicks().length;
+  var badge = document.getElementById("pickbadge");
+  if(badge) badge.textContent = Object.keys(getSavedPicks()).length;
 }
 
 function clearPicks() {
-  if(confirm("Clear all picks?")) { setPicks([]); updatePickBadge(); refreshPicks(); }
-}
-
-function refreshPicks() {
-  var picks = getPicks();
-  var cntEl = document.getElementById("pick-cnt");
-  var dateEl = document.getElementById("pick-date");
-  if(cntEl) cntEl.textContent = picks.length;
-  var ts = 0; picks.forEach(function(p){if(p.ts>ts)ts=p.ts;});
-  if(dateEl) dateEl.textContent = ts ? new Date(ts).toLocaleDateString() : "—";
-  var cards = document.getElementById("pick-cards");
-  var empty = document.getElementById("pick-empty");
-  if(!cards) return;
-  cards.innerHTML = "";
-  if(picks.length===0){ if(empty) empty.style.display="block"; return; }
-  if(empty) empty.style.display="none";
-  var sC={"Technology":"#60a5fa","Healthcare":"#34d399","Financial Services":"#fbbf24","Consumer Cyclical":"#f87171","Consumer Defensive":"#a78bfa","Industrials":"#94a3b8","Communication Services":"#fb923c"};
-  picks.sort(function(a,b){return (b.score||0)-(a.score||0);}).forEach(function(p){
-    var scoreClass = p.score===7?" score7":p.score===6?" score6":"";
-    var card = document.createElement("div");
-    card.className = "rcard pass picked"+scoreClass;
-    card.style.marginBottom = "8px";
-    // Build header
-    var top = document.createElement("div");
-    top.className = "rcard-top";
-    top.innerHTML =
-      '<div><div class="rticker">★ '+p.ticker+'</div>'+
-      '<div class="rname">'+(p.companyName||"")+
-      (p.sector?'<span style="font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.06);color:'+(sC[p.sector]||"var(--mut)")+';margin-left:8px">'+p.sector+'</span>':'')+
-      '</div></div>'+
-      '<div style="text-align:right">'+
-      '<div class="rscore s-pass">'+p.score+'<span style="font-size:13px;color:var(--mut)">/7</span></div>'+
-      '</div>';
-    // Remove button - append after innerHTML so it sticks
-    var rb = document.createElement("button");
-    rb.className = "star-btn on"; rb.textContent = "★"; rb.title = "Remove";
-    rb.setAttribute("data-t", p.ticker);
-    rb.onclick = function(){ removePick(this.getAttribute("data-t")); };
-    top.querySelector('div[style*="text-align:right"]').appendChild(rb);
-    card.appendChild(top);
-    // Build body
-    var body = document.createElement("div");
-    body.className = "rcard-body";
-    var meta = [];
-    if(p.shortPct) meta.push('Short: <strong style="color:var(--dan)">'+sf(p.shortPct*100)+'%</strong>');
-    if(p.price) meta.push('$'+sf(p.price,2));
-    if(p.fwdPE) meta.push('PE: <strong>'+sf(p.fwdPE)+'x</strong>');
-    if(p.profitMargin) meta.push('Margin: <strong>'+sf(p.profitMargin*100)+'%</strong>');
-    if(p.nextEarnings){
-      var days=Math.round((new Date(p.nextEarnings)-Date.now())/86400000);
-      meta.push('Earnings: <strong style="color:'+(days>=0&&days<=30?"var(--warn)":"var(--mut)")+'">'+p.nextEarnings+(days>=0?" ("+days+"d)":"")+'</strong>');
-    }
-    if(p.analystBuyPct) meta.push('★ <span style="color:'+(p.analystBuyPct>=70?"var(--acc)":"var(--warn)")+'">'+p.analystBuyPct+'% buy</span>');
-    meta.push('Added: <strong>'+new Date(p.ts).toLocaleDateString()+'</strong>');
-    body.innerHTML = '<div class="rmeta">'+meta.join(' &middot; ')+'</div>';
-    card.appendChild(body);
-    cards.appendChild(card);
+  if(!confirm("Clear all picks?")) return;
+  localStorage.removeItem("sbp2");
+  var pickCards = document.getElementById("pick-cards");
+  if(pickCards) pickCards.innerHTML="";
+  var pickEmpty = document.getElementById("pick-empty");
+  if(pickEmpty) pickEmpty.style.display="block";
+  updatePickBadge();
+  // Reset all stars in screener
+  document.querySelectorAll(".star-btn.on").forEach(function(b){
+    b.textContent="☆"; b.classList.remove("on");
   });
 }
 
+function refreshPicks() { loadSavedPicks(); }
+function getPicks() { return Object.keys(getSavedPicks()).map(function(t){ return {ticker:t}; }); }
 
-function debugPicks() {
-  var el = document.getElementById("picks-debug");
-  var picks = getPicks();
-  if(el.style.display === "block") { el.style.display = "none"; return; }
-  el.style.display = "block";
-  el.innerHTML = "Raw picks (" + picks.length + "):<br>";
-  picks.forEach(function(p, i) {
-    el.innerHTML += "<br><strong>" + p.ticker + "</strong>: " + JSON.stringify(p).substring(0,200);
-  });
-  // Also try manual render
-  el.innerHTML += "<br><br>Attempting manual render...";
-  try {
-    var cards = document.getElementById("pick-cards");
-    var empty = document.getElementById("pick-empty");
-    el.innerHTML += "<br>pick-cards found: " + (cards ? "YES" : "NO");
-    el.innerHTML += "<br>pick-empty found: " + (empty ? "YES" : "NO");
-    if(picks.length > 0 && cards) {
-      cards.innerHTML = "";
-      if(empty) empty.style.display = "none";
-      picks.forEach(function(p) {
-        var d = document.createElement("div");
-        d.style.cssText = "background:#1c2028;border:1px solid #4ade80;border-radius:8px;padding:12px;margin-bottom:8px";
-        d.innerHTML = "<strong style='color:#4ade80;font-size:16px'>" + p.ticker + "</strong> &mdash; Score: " + p.score + "/7<br>" +
-          "<span style='color:#a0a8b8;font-size:11px'>" + (p.companyName||"") + "</span><br>" +
-          "<span style='color:#e8eaf0;font-size:11px'>" +
-          (p.shortPct ? "Short: " + (p.shortPct*100).toFixed(1) + "% | " : "") +
-          (p.price ? "$" + p.price.toFixed(2) + " | " : "") +
-          (p.nextEarnings ? "Earnings: " + p.nextEarnings : "") +
-          "</span>";
-        cards.appendChild(d);
-      });
-      el.innerHTML += "<br>Rendered " + picks.length + " picks manually.";
-    }
-  } catch(e) {
-    el.innerHTML += "<br>ERROR: " + e.message;
-  }
-}
-
-function removePick(ticker) {
-  var pk = getPicks(); var idx=-1;
-  for(var i=0;i<pk.length;i++){if(pk[i].ticker===ticker){idx=i;break;}}
-  if(idx>=0){pk.splice(idx,1);setPicks(pk);updatePickBadge();refreshPicks();}
-  var stars=document.querySelectorAll('[data-ticker="'+ticker+'"].star-btn');
-  for(var i=0;i<stars.length;i++){stars[i].textContent="☆";stars[i].classList.remove("on");}
-}
-
-function testConn() {
-  var inp = document.getElementById("worker-url");
-  var url = inp ? inp.value : "";
-  if(!url) { alert("Enter Worker URL first"); return; }
-  localStorage.setItem("sbworker", url);
-  var msg = document.getElementById("conn-msg");
-  var dot = document.getElementById("conn-status");
-  if(msg) msg.textContent = "Testing...";
-  fetch(url+"?action=ping", {signal:AbortSignal.timeout(8000)})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(msg){msg.textContent=d.ok?"Connected: "+(d.msg||"OK"):"Error "+JSON.stringify(d);msg.style.color=d.ok?"var(--acc)":"var(--dan)";}
-      if(dot){dot.textContent=d.ok?"● Connected":"● Error";dot.style.color=d.ok?"var(--acc)":"var(--dan)";}
-    })
-    .catch(function(e){if(msg){msg.textContent="Failed: "+e.message;msg.style.color="var(--dan)";}});
-}
-
-function toggleMandatory() {
-  mandatoryMode = !mandatoryMode;
-  var btn = document.getElementById("mandatory-btn");
-  var info = document.getElementById("mandatory-info");
-  if(btn){btn.textContent="Mandatory: "+(mandatoryMode?"ON ✓":"OFF");btn.style.color=mandatoryMode?"var(--warn)":"";btn.style.borderColor=mandatoryMode?"var(--wb)":"";btn.style.background=mandatoryMode?"var(--wdim)":"";}
-  if(info) info.style.display = mandatoryMode?"block":"none";
-  var m6=document.getElementById("mand-c6"); if(m6) m6.style.display=mandatoryMode?"inline":"none";
-  var m9=document.getElementById("mand-c9"); if(m9) m9.style.display=mandatoryMode?"inline":"none";
-}
 
 window.onload = function() {
+  loadSavedPicks();
   var nd = document.getElementById("nav-date");
   if(nd) nd.textContent = new Date().toLocaleDateString("en-GB",{day:"numeric",month:"short"});
   renderCriteria();
