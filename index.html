@@ -112,23 +112,14 @@ nav{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 24px;disp
 <nav>
   <div class="nb">Snap&middot;Back <span>Screener</span></div>
   <button class="nt active" id="tab-screen" onclick="showPage('screen')">Screener</button>
+  <button class="nt" id="tab-watch" onclick="showPage('watch')">Watchlist <span class="nbadge" id="wbadge">0</span></button>
   <button class="nt" id="tab-pick" onclick="showPage('pick')">My Picks <span class="nbadge" id="pickbadge" style="background:var(--gdim);color:var(--gold)">0</span></button>
-  <span style="margin-left:auto;font-size:10px;color:var(--mut);padding:0 16px">v8.1 &middot; <span id="nav-date"></span></span>
+  <span style="margin-left:auto;font-size:10px;color:var(--mut);padding:0 16px;white-space:nowrap">v9 &middot; <span id="nav-date"></span></span>
 </nav>
 
 <div class="page vis" id="page-screen">
   <div class="sg">
     <div>
-      <div class="panel">
-        <div class="ph"><span class="pht">Connection</span><span id="conn-status" style="font-size:11px;color:var(--mut)">● Not tested</span></div>
-        <div class="pb">
-          <div style="display:flex;gap:6px">
-            <input id="worker-url" type="text" value="https://screener-proxy.philippeaichomier.workers.dev" style="flex:1;background:var(--sur2);border:1px solid var(--brd2);border-radius:6px;padding:7px 10px;color:var(--txt);font-family:var(--mono);font-size:11px">
-            <button onclick="testConn()" style="padding:7px 14px;background:var(--adim);border:1px solid var(--ab);border-radius:6px;color:var(--acc);font-family:var(--mono);font-size:11px;cursor:pointer">Test</button>
-          </div>
-          <div id="conn-msg" style="font-size:10px;color:var(--mut)"></div>
-        </div>
-      </div>
       <div class="panel">
         <div class="ph"><span class="pht">Universe</span><span id="univ-lbl" style="font-size:11px;color:var(--mut)">Russell 2000+ &middot; 1670 stocks</span></div>
         <div class="pb">
@@ -155,12 +146,7 @@ nav{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 24px;disp
           </div>
         </div>
       </div>
-      <button class="btn-sec" id="mandatory-btn" onclick="toggleMandatory()" style="width:100%;margin-bottom:8px;padding:9px">Mandatory: OFF</button>
-      <div id="mandatory-info" style="display:none;font-size:10px;color:var(--warn);padding:6px 10px;background:var(--wdim);border:1px solid var(--wb);border-radius:6px;line-height:1.5;margin-bottom:8px">✓ Short interest &gt; 5% required<br>✓ Earnings within 30 days required</div>
-      <button class="btn-run" id="run-btn" onclick="startScan()">Run full Russell 2000 scan</button>
-      <button class="btn-sec" id="adv-btn" onclick="startAdvancedScan()" style="width:100%;margin-top:8px;padding:10px;background:var(--wdim);border:1px solid var(--wb);color:var(--warn);font-family:var(--mono);font-size:12px;border-radius:8px;cursor:pointer">
-        &#9889; Advanced scan: Short + Earnings &rarr; 3/5 more
-      </button>
+      <button class="btn-run" id="run-btn" onclick="startScan()">&nbsp;&#9889;&nbsp;Advanced Scan: Short + Earnings &rarr; 3 more</button>
       <button class="btn-sec" id="clear-btn" onclick="clearCache()" style="display:none">Clear cache &amp; reset</button>
     </div>
     <div id="right-col">
@@ -173,12 +159,8 @@ nav{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 24px;disp
   <div class="wl-hdr">
     <div><div class="wl-title">My <span style="color:var(--gold)">Picks</span></div>
     <div style="font-size:11px;color:var(--mut);margin-top:4px">Your starred high-conviction setups</div></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn-sec" onclick="debugPicks()" style="font-size:11px;padding:6px 12px">Debug</button>
-      <button class="btn-danger" onclick="clearPicks()">Clear all</button>
-    </div>
+    <button class="btn-danger" onclick="clearPicks()">Clear all</button>
   </div>
-  <div id="picks-debug" style="display:none;background:#14171c;border:1px solid #252930;border-radius:8px;padding:12px;margin-bottom:12px;font-size:10px;font-family:monospace;color:#60a5fa;max-height:200px;overflow-y:auto"></div>
   <div class="ic-grid">
     <div class="ic"><div class="ic-n hl-gold" id="pick-cnt">0</div><div class="ic-l">Starred picks</div></div>
     <div class="ic"><div class="ic-n" id="pick-date" style="font-size:13px;margin-top:4px">&mdash;</div><div class="ic-l">Last starred</div></div>
@@ -212,10 +194,6 @@ nav{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 24px;disp
 var RUSSELL2000 = "AACI,AAON,AAPL,AAXN,ABCB,ABCM,ABG,ABM,ABMD,ACAD,ACGL,ACIW,ACLS,ACRE,ACV,ADBE,ADMA,ADNT,ADS,ADUS,AEIS,AFG,AFYA,AGCO,AGIO,AGL,AGO,AIN,AIR,AIT,AJRD,AKR,ALG,ALGT,ALKS,ALLE,ALNY,ALRN,ALRS,ALV,AMAT,AMBC,AME,AMEH,AMKR,AMN,AMNB,AMPH,AMRC,AMRN,AMRX,AMSC,AMTB,AMWD,AN,ANAB,ANDE,ANGI,ANIK,ANIP,ANSS,ANTX,AON,AORT,AOS,APAM,APG,APH,APOG,APP,APPF,APPN,APPS,APR,APYX,AQST,ARCO,ARDX,ARHS,ARI,ARKO,ARLO,ARLP,ARMK,AROC,AROW,ARQT,ARR,ARRY,ARVN,ARWR,ASB,ASGN,ASH,ASLE,ASND,ASPI,ASPS,ASRT,ASTE,ASTL,ATAI,ATEC,ATI,ATKR,ATLC,ATLO,ATNI,ATR,ATRC,ATXS,AUB,AUBN,AUDC,AUPH,AVAH,AVAV,AVLR,AVNS,AVNT,AVNW,AVPT,AVTR,AWI,AWR,AXGN,AXIL,AXON,AXS,AXSM,AXTA,AYTU,AZTA,B,BALY,BAND,BANF,BANR,BAX,BBIO,BBSI,BC,BCAB,BCC,BCML,BCPC,BCRX,BDC,BDN,BDSX,BEAM,BEI,BELFA,BELFB,BERY,BFC,BFH,BFLY,BG,BGS,BGSF,BHC,BHVN,BIG,BIIB,BILI,BIOX,BIRK,BJ,BJRI,BKH,BKNG,BKTI,BLBD,BLCO,BLFS,BLKB,BLMN,BLND,BLNK,BLUE,BLX,BMBL,BMI,BMRN,BNGO,BNTX,BOKF,BOOT,BORR,BOWL,BPRN,BRBR,BRC,BRKL,BRKR,BROS,BRSP,BRT,BSRR,BSVN,BSY,BTU,BURL,BUSE,BV,BWA,BWB,BWFG,BWIN,BWMN,BXC,BXP,BYND,BYRN,BZFD,CABO,CACI,CALM,CALX,CAMT,CARE,CARG,CARS,CARV,CASH,CASS,CATO,CATY,CAVA,CBAN,CBFV,CBIO,CBL,CBNK,CBRL,CBSH,CBT,CCAP,CCCS,CCNE,CCRN,CCSI,CDAK,CDAY,CDK,CDLX,CDNA,CDNS,CDRE,CDW,CDXS,CDZI,CECO,CENT,CENTA,CENX,CERT,CEVA,CF,CFFI,CFFN,CFG,CFR,CGEM,CGEN,CHCI,CHCO,CHDN,CHEF,CHGG,CHKP,CHMG,CHNG,CHPT,CHRS,CHX,CIFR,CIGI,CIM,CINF,CIR,CIVB,CIVI,CIZN,CKH,CLBT,CLC,CLDX,CLFD,CLGX,CLH,CLMT,CLNE,CLPT,CLRB,CLS,CLSK,CMC,CMCO,CMEN,CMMB,CMPR,CMPS,CMRE,CNDT,CNK,CNMD,CNO,CNOB,CNS,CNSP,CNTA,CNTY,CNXN,CODA,CODX,COFS,COHN,COHU,COKE,COLB,COLL,COLM,COMP,CONE,CONN,CORE,CORT,COTY,CPAY,CPB,CPRT,CPRX,CQP,CR,CRAI,CRBP,CRBU,CRC,CRDF,CRDO,CREE,CRGY,CRL,CRMT,CRNX,CROX,CRS,CRSP,CRUS,CRWD,CSBR,CSGP,CSGS,CSIQ,CSL,CSR,CSTE,CSTL,CSWI,CTB,CTBI,CTMX,CTRE,CTSH,CTSO,CTVA,CULP,CURI,CURV,CUZ,CVBF,CVCO,CVG,CVGW,CVLG,CVLT,CVRX,CWCO,CWEN,CWST,CWT,CXO,CYBE,CZFS,DAIO,DAKT,DAR,DARE,DASH,DBD,DBSX,DBX,DCGO,DCI,DCOM,DDOG,DECK,DENN,DFH,DFIN,DGICA,DGII,DGX,DHX,DIBS,DIN,DINO,DIOD,DJCO,DKNG,DKS,DLB,DLHC,DLX,DMLP,DMRC,DNLI,DNOW,DO,DOMO,DORM,DOUG,DRH,DRI,DRQ,DRTS,DRVN,DSGX,DSP,DTIL,DUOT,DV,DVA,DWSN,DXPE,DXYN,DY,DYAI,EAST,EAT,EBC,EBIX,EBON,ECL,ECPG,ECVT,EDIT,EDUC,EFC,EGP,EGRX,EHC,EIG,ELTK,ELVN,ELY,EMBC,EMCF,EME,EMMS,EMPR,ENGI,ENOV,ENPH,ENR,ENS,ENSG,ENTG,ENV,ENVA,ENVB,ENVX,EOG,EPAC,EPM,EPOW,EPRT,EQBK,EQIX,ERAS,ERIC,ERII,ESAB,ESEA,ESNT,ESOA,ESPR,ESRT,ESS,ESSA,ESTA,ESTC,ETON,ETRN,EV,EVAX,EVBG,EVGO,EVH,EVRI,EVSB,EVTC,EVUS,EWBC,EXAI,EXAS,EXEL,EXP,EXPD,EXPO,EXTR,EYE,FAF,FANG,FARO,FATE,FBMS,FBNC,FBP,FBRT,FC,FCAP,FCCO,FCNCA,FCPT,FDMT,FDP,FDUS,FFBC,FFIC,FFIN,FGEN,FHN,FIBK,FII,FISI,FITB,FIVE,FIVN,FIXX,FIZZ,FL,FLGC,FLIR,FLNC,FLNX,FLO,FLS,FLT,FLXN,FMAO,FMBH,FMNB,FNB,FNCB,FNHC,FNKO,FNLC,FNV,FOLD,FOR,FORM,FOSL,FOUR,FOXO,FRAF,FRD,FRPH,FRPT,FRST,FRTX,FSBW,FSLY,FSRV,FSS,FSTR,FTCI,FTDR,FTHM,FTRE,FUL,FULT,FUNC,G,GALT,GATO,GBX,GCMG,GEF,GEN,GENC,GEOS,GERN,GFF,GHC,GHIX,GIII,GK,GKOS,GL,GLAD,GLBE,GLDD,GLNG,GLOB,GLYC,GME,GMED,GMGI,GNRC,GNTX,GOCO,GOLF,GOOS,GORV,GPC,GPMT,GPRE,GPRO,GRC,GREE,GRFS,GRIN,GRMN,GRND,GRNT,GRPN,GRVI,GRWG,GSHD,GSIT,GTES,GTIM,GTLB,GURE,GVP,GWRS,H,HAFC,HALO,HBCP,HBI,HBIO,HBMD,HBNC,HCAT,HCI,HCKT,HEES,HELE,HELI,HERE,HFBL,HFC,HFFG,HFWA,HGV,HHC,HIBB,HIFS,HIW,HLNE,HLX,HMN,HMST,HNNA,HOG,HOMB,HONE,HOOK,HOPE,HOVR,HP,HPNN,HPP,HQY,HRI,HRMY,HROW,HRQ,HRTS,HS,HSII,HSON,HTBI,HTBK,HTLD,HTZ,HUMA,HURN,HVBC,HWBK,HWKN,HWM,IART,IBCP,IBEX,IBM,IBTX,ICAD,ICFI,ICHR,ICU,IDCC,IDEX,IDT,IDXX,IFIN,IFRX,IIIN,IMGN,IMMR,INBK,INBX,INCY,INDB,INFN,INGN,INMD,INN,INSP,INST,INT,INTZ,INVA,INVE,INZY,IONQ,IOSP,IOVA,IPDN,IPHA,IPI,IQ,IRBT,IRT,ISBC,ITCI,ITGR,ITIC,ITRI,IVAC,IVVD,JACK,JAGX,JBGS,JBLU,JBSS,JELD,JEWL,JHG,JJSF,JLL,JNCE,JOBS,JOE,JOUT,JWN,K,KALA,KAR,KBAL,KBH,KBR,KEX,KFRC,KLXE,KMDA,KNDI,KNSA,KNSL,KODK,KOP,KOSS,KRC,KRG,KRTX,KRUS,KSPN,KSS,KTB,KTOS,KULR,KURA,KW,L,LADR,LAKE,LAMR,LANC,LAND,LASR,LAUR,LAWS,LAZR,LBAI,LBC,LBPH,LC,LCNB,LCUT,LEGN,LESL,LGF,LGIH,LGND,LGVN,LHCG,LHX,LINC,LITB,LIVE,LIVN,LJPC,LKFN,LKQ,LL,LMAT,LMB,LMND,LMNR,LNC,LNDC,LNN,LNSR,LOAN,LOAR,LOB,LOCO,LOGI,LOPE,LOVE,LPLA,LPX,LQDA,LRN,LSCC,LSTR,LTBR,LTC,LTRN,LUNA,LVLU,LXFR,LXP,LXRX,LYEL,LYFT,LYTS,M,MAC,MACK,MAN,MANH,MARA,MARK,MASI,MATV,MATX,MAVN,MAX,MAXN,MBC,MBCN,MBI,MBII,MBLY,MBUU,MBWM,MC,MCB,MCBC,MCRB,MCY,MDAI,MDRX,MDU,MDWD,MDXG,MEDP,MEIP,MERC,MESA,METC,METX,MFA,MFIN,MGEE,MGEN,MGNX,MGPI,MGRC,MGTA,MGTX,MHK,MIDD,MIME,MINM,MIRO,MIST,MITK,MKFG,MLAB,MLCO,MLI,MLNK,MMI,MMS,MMSI,MNKD,MNMD,MNRO,MODN,MOHO,MORF,MORN,MOTS,MPAA,MPLN,MPW,MPWR,MRAM,MRC,MRCY,MRNS,MRSN,MRTN,MRTX,MRVI,MSA,MSEX,MSFG,MSM,MSTB,MTCN,MTEM,MTEX,MTH,MTLS,MTN,MTNB,MTSI,MTX,MULN,MUR,MURA,MUSA,MVBF,MVIS,MWA,MWRK,MXL,MYMD,MYPK,NAAS,NATH,NATI,NAUT,NAVI,NBHC,NBR,NBTB,NCBS,NCNA,NCR,NDAQ,NDLS,NEO,NEOS,NERV,NFBK,NGMS,NGNE,NHC,NHI,NI,NINE,NJR,NKLA,NKSH,NMFC,NMIH,NMRK,NNBR,NNI,NOG,NOMD,NOVT,NRBO,NRC,NREF,NRG,NRIM,NRXP,NSA,NSEC,NSP,NSSC,NSTG,NTBL,NTCT,NTIC,NTLS,NTST,NUS,NUVL,NVAX,NVCT,NVEE,NVEI,NVET,NVNA,NVNI,NVNO,NVST,NVT,NWE,NWIN,NWN,NXGL,NXRT,NXST,NXTC,NYMT,OBDC,OBLG,OCFC,OCGN,OCUL,ODP,OFG,OFIX,OFLX,OGE,OGS,OHI,OII,OIS,OLN,OMCL,OMER,ONB,ONCR,ONCS,ONCT,ONE,ONEW,ONFO,ONTO,OOMA,OPAL,OPCH,OPEN,OPI,OPRX,OPTN,ORGO,ORMP,ORN,ORRF,OSBC,OSK,OSPN,OSUR,OSYS,OTEX,OTLK,OTTR,OVBC,OVID,OVLY,OXLC,PACS,PAHC,PAM,PANW,PARR,PATI,PATK,PAYA,PAYS,PBCO,PBFS,PBHC,PBIP,PBPB,PCAR,PCH,PCSA,PCVX,PDCO,PDFS,PDLB,PEAK,PEB,PEBO,PECO,PEI,PEN,PENN,PERI,PETQ,PETS,PFBC,PFBI,PFHD,PFIE,PFIS,PFMT,PFNX,PFS,PGC,PGNY,PHAT,PHGE,PHUN,PHX,PII,PINC,PIPR,PKBK,PKE,PKG,PKOH,PKST,PLAB,PLBY,PLMR,PLPC,PLRX,PLSE,PLTR,PLXS,PMT,PMTS,PNFP,PNM,PNTG,PNW,PODD,POLA,POLY,POST,POWL,PRAA,PRAX,PRCH,PRDO,PRFT,PRGS,PRGX,PRK,PRLD,PROS,PROV,PRPL,PRPO,PRQR,PRSC,PRSO,PRTK,PRTS,PRVA,PRVB,PSFE,PSIX,PSMT,PSNL,PSTL,PSX,PTCT,PTLO,PTSI,PUMP,PVBC,PVH,PVTL,PW,PWOD,PWP,PXD,PZZA,QCRH,QDEL,QLGN,QLYS,QNST,QRHC,QRVO,QUAD,QUBT,QUIK,RADI,RAIL,RBC,RCEL,RCKT,RCKY,RCM,RCN,RCUS,RDNT,RDUS,RDVT,REAL,REG,REGI,REIS,RELY,RENB,RENT,REPL,REVG,REX,REZI,RFIL,RFLX,RGCO,RGEN,RGNX,RGTI,RHP,RICK,RIG,RIGL,RILY,RIOT,RITM,RIVN,RKLB,RLAY,RLJ,RMBS,RMCF,RMD,RMNI,RNG,RNST,ROAD,ROCK,ROG,ROIC,ROKU,ROLL,ROOT,ROST,ROVR,RPAY,RPM,RRR,RSG,RTX,RUSHA,RXO,RXRX,RXST,RXT,RYAM,S,SAFE,SAGE,SAH,SAIA,SAIC,SAIL,SBCF,SBFG,SBGI,SBH,SBLK,SBRA,SBSI,SCHL,SCHN,SCI,SCSC,SCVL,SDGR,SEAT,SEIC,SENB,SF,SFIX,SFM,SFNC,SFST,SGBX,SGEN,SGMS,SHAK,SHBI,SHCR,SHEN,SHLS,SHO,SHOO,SHW,SHYF,SIEN,SIG,SIGA,SIGI,SILO,SINT,SITM,SJW,SKT,SKWD,SLCA,SLDB,SLM,SLNG,SLNO,SM,SMBC,SMCI,SMID,SMIT,SMMT,SMP,SMPL,SNA,SNBR,SNCR,SNCY,SNEX,SNOA,SNPO,SNPX,SNSE,SNSR,SNTI,SNUG,SNVM,SNX,SOFI,SOLO,SON,SONN,SONO,SOPH,SOUN,SPB,SPC,SPFI,SPGI,SPHR,SPIR,SPN,SPNC,SPNS,SPNT,SPOK,SPOT,SPPI,SPR,SPRB,SPRC,SPRO,SPSC,SPWH,SPXC,SQNS,SQSP,SRC,SRCL,SRE,SREA,SREV,SRI,SRPT,SRRK,SRTS,SRZN,SSB,SSBI,SSBK,SSD,SSFN,SSRM,SSSS,SSYS,STAA,STAF,STAG,STBA,STC,STFC,STGW,STHO,STIM,STIX,STKS,STLD,STNE,STNG,STOK,STON,STRC,STRM,STRN,STRR,STRS,STRT,STTK,STVN,SUM,SUMO,SURG,SVNX,SWAV,SWI,SWIM,SWK,SWKH,SWM,SWN,SWX,SXI,SXT,SXTC,SXTP,SYBT,SYF,SYK,SYNH,SYRS,SYTA,SYX,TACT,TALO,TASK,TBBB,TBBK,TBIO,TBNK,TBPH,TCBK,TCCO,TCMD,TCRR,TDC,TDOC,TDS,TELA,TELL,TENB,TEON,TER,TFC,TFX,TGI,TGNA,TGTX,THC,THFF,THO,THS,TILE,TKR,TMBR,TMDX,TMHC,TMP,TNET,TNK,TOWN,TPH,TPIC,TPST,TPVG,TR,TREE,TREK,TREX,TRGP,TRIB,TRIL,TRIP,TRMK,TRN,TRNO,TRNS,TROW,TROX,TRQ,TRS,TRST,TRTX,TRU,TRUP,TRVG,TSAT,TSC,TSEM,TSHA,TSN,TTEC,TTEK,TTGT,TTMI,TTOO,TTSH,TUEM,TUP,TUSK,TVTX,TWKS,TXMD,TXRH,TYME,TYRA,TZOO,UDMY,UEIC,UHAL,ULBI,ULCC,UMBF,UNAM,UNF,UNFI,UNIT,UNM,UNMD,UNTY,UPLD,UPWK,URBN,UROY,USAP,USAT,USBI,USD,USEG,USLM,USPH,USX,UTHR,UTMD,UVSP,UWMC,VAC,VACC,VALU,VANI,VAPO,VBTX,VC,VCNX,VCYT,VERB,VERV,VFC,VG,VGLS,VIGL,VIIA,VIRC,VIRI,VITO,VIVE,VKTX,VLY,VMI,VNDA,VNET,VNO,VNRX,VOYA,VPG,VRAY,VRCA,VRDN,VREX,VRRM,VRTS,VSCO,VSEC,VSH,VVPR,VVV,WAB,WABC,WAFD,WAL,WALA,WASH,WATT,WAVD,WBHC,WBND,WBS,WCC,WCLD,WD,WDFC,WEN,WERN,WEX,WFRD,WGO,WHR,WINA,WINT,WIT,WK,WKHS,WKME,WLK,WLL,WLMS,WLTW,WMK,WMS,WNC,WNEB,WOLF,WOR,WORX,WPC,WRB,WRI,WSBC,WSBF,WSBK,WSFS,WSM,WSO,WSR,WSTG,WTBA,WTFC,WTTR,WU,WULF,WWW,XELB,XFOR,XNCR,XOMA,XPEL,XPEV,XPO,XPOF,XRAY,YELP,YEXT,YMAB,YORW,YUM,ZBH,ZBRA,ZD,ZEUS,ZFOX,ZG,ZGNX,ZION,ZIOP,ZIVO,ZLAB,ZMTL,ZPTA,ZTSS,ZVRA,ZYME,ZYXI".split(",");
 var EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,SAP.DE,SIE.DE,ALV.DE,MUV2.DE,BMW.DE,MC.PA,OR.PA,TTE.PA,BNP.PA,NESN.SW,NOVN.SW,ROG.SW,AZN.L,HSBA.L,BP.L,ULVR.L,SAN.MC,ITX.MC,BBVA.MC,RACE.MI,ENI.MI,ENEL.MI".split(",");
 
-
-var EURO = "ASML.AS,SHELL.AS,HEIA.AS,INGA.AS,PHIA.AS,AD.AS,WKL.AS,SAP.DE,SIE.DE,ALV.DE,MUV2.DE,BMW.DE,MC.PA,OR.PA,TTE.PA,BNP.PA,NESN.SW,NOVN.SW,ROG.SW,AZN.L,HSBA.L,BP.L,ULVR.L,SAN.MC,ITX.MC,BBVA.MC,RACE.MI,ENI.MI,ENEL.MI".split(",");
-
-
 var WORKER = "https://screener-proxy.philippeaichomier.workers.dev";
 var SHEET  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQsjX6cNMm4IIUviJMo7945DzA5yS6KCzMVMmkAC6d5Hy_eH36HUraZpYV_9Xmb2PGE5iHBq-7zOwa/pub?gid=1304628110&single=true&output=csv";
 
@@ -237,18 +215,20 @@ var CRITERIA = [
     score: function(d) { if(d.price==null||d.low52==null) return {pass:null,missing:true,val:"No data"}; var pct=(d.price-d.low52)/d.low52; return {pass:pct<=0.20,missing:false,val:"+"+( sf(pct*100))+"% vs 52wk low"}; } }
 ];
 
+var mandatoryMode = true; // Always on - advanced mode is the only mode
+
 function getWorker() {
   var inp = document.getElementById("worker-url");
-  return (inp && inp.value) ? inp.value : localStorage.getItem("sbworker") || WORKER;
+  if(inp && inp.value) return inp.value;
+  return localStorage.getItem("sbworker") || WORKER;
 }
 
-function list() { return market==="us" ? RUSSELL2000 : EURO; }
 function getCache() { try { return JSON.parse(localStorage.getItem("sbc")||"{}"); } catch(e) { return {}; } }
 function setCache(c) { try { localStorage.setItem("sbc", JSON.stringify(c)); } catch(e) {} }
 function getWL() { try { return JSON.parse(localStorage.getItem("sbw")||"[]"); } catch(e) { return []; } }
 function setWL(w) { try { localStorage.setItem("sbw", JSON.stringify(w)); } catch(e) {} }
+function list(){return market==="us"?RUSSELL2000:EURO;}
 var market = "us";
-var mandatoryMode = false;
 var threshold = 5;
 var scanning = false;
 var advancedMode = false;
@@ -274,11 +254,10 @@ function updateLockDisplay() {
 }
 
 
-// ── SIMPLE PICKS: copy card HTML, save as strings ──
 function getSavedPicks() {
   try { return JSON.parse(localStorage.getItem("sbp2")||"{}"); } catch(e) { return {}; }
 }
-function savePicks(obj) {
+function savePicks2(obj) {
   try { localStorage.setItem("sbp2", JSON.stringify(obj)); } catch(e) {}
 }
 
@@ -291,45 +270,42 @@ function starCard(btn) {
   var badge = document.getElementById("pickbadge");
 
   if(picks[ticker]) {
-    // UNSTAR: remove from picks
+    // UNSTAR
     delete picks[ticker];
-    savePicks(picks);
-    // Remove card from picks page
+    savePicks2(picks);
     var existing = document.getElementById("pick-card-"+ticker);
     if(existing) existing.remove();
-    // Reset all stars for this ticker
     document.querySelectorAll('[data-ticker="'+ticker+'"].star-btn').forEach(function(b){
       b.textContent="☆"; b.classList.remove("on");
     });
   } else {
-    // STAR: clone the card into picks
-    var sourceCard = btn.closest(".rcard");
-    if(!sourceCard) return;
-    var clone = sourceCard.cloneNode(true);
-    clone.id = "pick-card-"+ticker;
-    clone.classList.add("picked");
-    // Replace star button in clone with remove button
-    var cloneStar = clone.querySelector(".star-btn");
-    if(cloneStar) {
-      cloneStar.textContent = "★";
-      cloneStar.classList.add("on");
-      cloneStar.setAttribute("data-ticker", ticker);
-      cloneStar.onclick = function(){ starCard(this); };
+    // STAR - clone card
+    var sourceCard = btn.closest ? btn.closest(".rcard") : null;
+    if(sourceCard) {
+      var clone = sourceCard.cloneNode(true);
+      clone.id = "pick-card-"+ticker;
+      clone.classList.add("picked");
+      var cloneStar = clone.querySelector(".star-btn");
+      if(cloneStar) {
+        cloneStar.textContent = "★";
+        cloneStar.classList.add("on");
+        cloneStar.setAttribute("data-ticker", ticker);
+        cloneStar.onclick = function(){ starCard(this); };
+      }
+      if(pickCards) pickCards.appendChild(clone);
+      picks[ticker] = sourceCard.outerHTML;
+    } else {
+      picks[ticker] = ticker; // fallback
     }
-    if(pickCards) pickCards.appendChild(clone);
-    // Save HTML
-    picks[ticker] = clone.outerHTML;
-    savePicks(picks);
-    // Mark all stars for this ticker
+    savePicks2(picks);
     document.querySelectorAll('[data-ticker="'+ticker+'"].star-btn').forEach(function(b){
       b.textContent="★"; b.classList.add("on");
     });
   }
 
-  // Update count
   var count = Object.keys(getSavedPicks()).length;
   if(badge) badge.textContent = count;
-  if(pickEmpty) pickEmpty.style.display = count===0 ? "block" : "none";
+  if(pickEmpty) pickEmpty.style.display = count===0?"block":"none";
 }
 
 function loadSavedPicks() {
@@ -340,23 +316,32 @@ function loadSavedPicks() {
   if(!pickCards) return;
   pickCards.innerHTML = "";
   var count = Object.keys(picks).length;
-  if(count===0){ if(pickEmpty) pickEmpty.style.display="block"; return; }
-  if(pickEmpty) pickEmpty.style.display="none";
-  Object.keys(picks).forEach(function(ticker){
-    var div = document.createElement("div");
-    div.innerHTML = picks[ticker];
-    var card = div.firstElementChild;
-    if(!card) return;
-    card.id = "pick-card-"+ticker;
-    // Re-attach star button onclick
-    var sb = card.querySelector(".star-btn");
-    if(sb) {
-      sb.setAttribute("data-ticker", ticker);
-      sb.onclick = function(){ starCard(this); };
-    }
-    pickCards.appendChild(card);
-  });
+  if(count===0){if(pickEmpty)pickEmpty.style.display="block";if(badge)badge.textContent=0;return;}
+  if(pickEmpty) pickEmpty.style.display = "none";
   if(badge) badge.textContent = count;
+  Object.keys(picks).forEach(function(ticker){
+    var html = picks[ticker];
+    if(!html || html===ticker) {
+      // Fallback: simple card
+      var div = document.createElement("div");
+      div.id = "pick-card-"+ticker;
+      div.className = "rcard pass picked";
+      div.style.marginBottom = "8px";
+      div.innerHTML = '<div class="rcard-top"><div><div class="rticker">★ '+ticker+'</div></div>'+
+        '<div><button class="star-btn on" data-ticker="'+ticker+'" onclick="starCard(this)">★</button></div></div>';
+      pickCards.appendChild(div);
+    } else {
+      var temp = document.createElement("div");
+      temp.innerHTML = html;
+      var card = temp.firstElementChild;
+      if(!card) return;
+      card.id = "pick-card-"+ticker;
+      card.classList.add("picked");
+      var sb = card.querySelector(".star-btn");
+      if(sb){ sb.setAttribute("data-ticker",ticker); sb.onclick=function(){starCard(this);}; }
+      pickCards.appendChild(card);
+    }
+  });
 }
 
 function updatePickBadge() {
@@ -367,25 +352,15 @@ function updatePickBadge() {
 function clearPicks() {
   if(!confirm("Clear all picks?")) return;
   localStorage.removeItem("sbp2");
-  var pickCards = document.getElementById("pick-cards");
-  if(pickCards) pickCards.innerHTML="";
-  var pickEmpty = document.getElementById("pick-empty");
-  if(pickEmpty) pickEmpty.style.display="block";
-  updatePickBadge();
-  // Reset all stars in screener
-  document.querySelectorAll(".star-btn.on").forEach(function(b){
-    b.textContent="☆"; b.classList.remove("on");
-  });
+  var pc=document.getElementById("pick-cards");if(pc)pc.innerHTML="";
+  var pe=document.getElementById("pick-empty");if(pe)pe.style.display="block";
+  var pb=document.getElementById("pickbadge");if(pb)pb.textContent="0";
+  document.querySelectorAll(".star-btn.on").forEach(function(b){b.textContent="☆";b.classList.remove("on");});
 }
-
-function refreshPicks() { loadSavedPicks(); }
-function getPicks() { return Object.keys(getSavedPicks()).map(function(t){ return {ticker:t}; }); }
 
 
 window.onload = function() {
   loadSavedPicks();
-  var nd = document.getElementById("nav-date");
-  if(nd) nd.textContent = new Date().toLocaleDateString("en-GB",{day:"numeric",month:"short"});
   renderCriteria();
   updateThresh();
   refreshCacheStatus();
@@ -473,11 +448,8 @@ function clearCache() {
 
 async function startScan() {
   if(scanning) { scanning=false; return; }
-  var workerUrl = document.getElementById("worker-url");
-  if(workerUrl && workerUrl.value) localStorage.setItem("sbworker", workerUrl.value);
   scanning = true;
-  var rb = document.getElementById("run-btn");
-  if(rb) rb.textContent = "Stop";
+  document.getElementById("run-btn").textContent = "Stop";
   try {
     await runScan();
   } catch(e) {
@@ -485,36 +457,7 @@ async function startScan() {
     console.error(e);
   }
   scanning = false;
-  if(rb) rb.textContent = market==="us"?"Run full Russell 2000 scan":"Run full Euro scan";
-}
-
-async function startAdvancedScan() {
-  // Gate 1: must have short interest > 5% AND earnings within 30 days
-  // Gate 2: must pass 3+ of remaining 5 criteria  
-  if(scanning){ scanning=false; return; }
-  var workerUrl = document.getElementById("worker-url");
-  if(workerUrl && workerUrl.value) localStorage.setItem("sbworker", workerUrl.value);
-  
-  // Set mandatory mode and lower threshold to 3 (short+earnings are gates, not counted)
-  mandatoryMode = true;
-  var savedThreshold = threshold;
-  threshold = 3;
-  
-  var ab = document.getElementById("adv-btn");
-  if(ab) { ab.textContent = "Stop"; ab.style.background="var(--ddim)"; }
-  
-  scanning = true;
-  try {
-    await runScan();
-  } catch(e) {
-    alert("Advanced scan error: "+e.message);
-    console.error(e);
-  }
-  scanning = false;
-  mandatoryMode = false;
-  threshold = savedThreshold;
-  updateThresh();
-  if(ab) { ab.textContent = "⚡ Advanced: Short + Earnings → 3/5 more"; ab.style.background="var(--wdim)"; }
+  document.getElementById("run-btn").textContent = market==="us"?"Run full Russell 2000 scan":"Run full Euro scan";
 }
 
 async function runScan() {
@@ -684,12 +627,14 @@ async function runScan() {
       else if(r && r.missing===true) missing++;
     }
     var optimistic = confirmed+missing;
-    // Mandatory mode: short interest (c6) + earnings within 30d (c9) must BOTH pass
-    if(mandatoryMode) {
-      if(!critResults["c6"] || critResults["c6"].pass !== true) continue;
-      if(!critResults["c9"] || critResults["c9"].pass !== true) continue;
-    }
-    if(confirmed>=threshold || (confirmed>=2 && optimistic>=threshold)) {
+    // Gate 1: short interest must pass
+    var shortR = critResults["c6"];
+    if(!shortR || shortR.pass !== true) continue;
+    // Gate 2: earnings within 30d must pass  
+    var earnR = critResults["c9"];
+    if(!earnR || earnR.pass !== true) continue;
+    // Then need 3+ from remaining 5 (threshold=3, but short+earnings already passed as gates)
+    if(confirmed>=3 || (confirmed>=2 && optimistic>=5)) {
       scored.push({ticker:t, score:confirmed, optimistic:optimistic, missing:missing, critResults:critResults, data:d});
     }
   }
