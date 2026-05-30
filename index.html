@@ -112,7 +112,6 @@ nav{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 24px;disp
 <nav>
   <div class="nb">Snap&middot;Back <span>Screener</span></div>
   <button class="nt active" id="tab-screen" onclick="showPage('screen')">Screener</button>
-  <button class="nt" id="tab-pick" onclick="showPage('pick')">My Picks <span class="nbadge" id="pickbadge" style="background:var(--gdim);color:var(--gold)">0</span></button>
   <span id="ver-badge" style="margin-left:auto;font-size:10px;color:var(--mut);padding:0 16px">v9</span>
 </nav>
 
@@ -158,20 +157,7 @@ nav{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 24px;disp
   </div>
   <div class="disc"><strong>Disclaimer:</strong> For research purposes only. Not financial advice.</div>
 
-<div class="page" id="page-pick">
-  <div class="wl-hdr">
-    <div><div class="wl-title">My <span style="color:var(--gold)">Picks</span></div>
-    <div style="font-size:11px;color:var(--mut);margin-top:4px">Your starred high-conviction setups</div></div>
-    <button class="btn-danger" onclick="clearPicks()">Clear all</button>
-  </div>
-  <div class="ic-grid">
-    <div class="ic"><div class="ic-n hl-gold" id="pick-cnt">0</div><div class="ic-l">Starred picks</div></div>
-    <div class="ic"><div class="ic-n" id="pick-date" style="font-size:13px;margin-top:4px">&mdash;</div><div class="ic-l">Last starred</div></div>
-  </div>
-  <div id="pick-cards" class="results-grid"></div>
-  <div id="pick-pool" style="display:none"></div>
-  <div class="empty" id="pick-empty"><div class="ei">&#9733;</div><p>No picks yet.<br>Star any stock from the screener or watchlist.</p></div>
-</div>
+
 </div>
 
 
@@ -242,24 +228,24 @@ function isStarred(t){return getMyPicks().indexOf(t)>=0;}
 function updatePicksBadge(){var b=document.getElementById("pickbadge");if(b)b.textContent=getMyPicks().length;}
 function updatePickBadge(){updatePicksBadge();}
 
-function toggleStar(ticker){
-  var picks=getMyPicks();
-  var idx=picks.indexOf(ticker);
-  var adding=idx<0;
-  if(idx>=0){picks.splice(idx,1);}else{picks.push(ticker);}
+function toggleStar(ticker) {
+  var picks = getMyPicks();
+  var idx = picks.indexOf(ticker);
+  var adding = idx < 0;
+  if(idx >= 0) { picks.splice(idx, 1); } else { picks.push(ticker); }
   saveMyPicks(picks);
-  updatePicksBadge();
-  renderMyPicks();
-  var starred=isStarred(ticker);
-  document.querySelectorAll('.star-btn[data-t="'+ticker+'"]').forEach(function(b){
-    b.textContent=starred?"★":"☆"; b.style.color=starred?"var(--gold)":"";
+  var starred = isStarred(ticker);
+  // Update all star buttons + card border for this ticker
+  document.querySelectorAll('[data-t="'+ticker+'"]').forEach(function(btn) {
+    btn.textContent = starred ? "★" : "☆";
+    btn.style.color = starred ? "var(--gold)" : "var(--mut)";
+    var card = btn.closest ? btn.closest(".rcard") : null;
+    if(card) {
+      if(starred) card.classList.add("picked"); else card.classList.remove("picked");
+    }
   });
-  if(adding){
-    var badge=document.getElementById("pickbadge");
-    if(badge){badge.style.background="rgba(255,215,0,.9)";badge.style.color="#000";
-      setTimeout(function(){badge.style.background="";badge.style.color="";},1500);}
-  }
 }
+
 
 function handlePickStar(btn){
   var t=btn.getAttribute("data-t");
@@ -322,6 +308,37 @@ function testConn(){
       if(dot){dot.textContent=d.ok?"● Connected":"● Error";dot.style.color=d.ok?"var(--acc)":"var(--dan)";}
     })
     .catch(function(e){if(msg){msg.textContent="Failed: "+e.message;msg.style.color="var(--dan)";}});
+}
+
+function sortByStars() {
+  var grid = document.querySelector(".results-grid");
+  if(!grid) return;
+  var cards = Array.from(grid.querySelectorAll(".rcard"));
+  if(!cards.length) return;
+  var btn = document.getElementById("sort-btn");
+
+  cards.sort(function(a, b) {
+    var aStarred = a.classList.contains("picked") ? 1 : 0;
+    var bStarred = b.classList.contains("picked") ? 1 : 0;
+    if(bStarred !== aStarred) return bStarred - aStarred;
+    // Then by score (data-score attr or count hits)
+    var aScore = parseInt(a.getAttribute("data-score")||"0");
+    var bScore = parseInt(b.getAttribute("data-score")||"0");
+    if(bScore !== aScore) return bScore - aScore;
+    // Then by short interest (from chip text)
+    var aShort = parseFloat((a.querySelector(".chip.hit span:last-child")||{textContent:"0"}).textContent)||0;
+    var bShort = parseFloat((b.querySelector(".chip.hit span:last-child")||{textContent:"0"}).textContent)||0;
+    return bShort - aShort;
+  });
+
+  cards.forEach(function(card) { grid.appendChild(card); });
+
+  // Visual feedback
+  if(btn) {
+    btn.style.background = "rgba(59,130,246,.4)";
+    btn.style.borderColor = "rgba(59,130,246,.8)";
+    setTimeout(function(){ btn.style.background="rgba(59,130,246,.15)"; btn.style.borderColor="rgba(59,130,246,.4)"; }, 600);
+  }
 }
 
 window.onload = function() {
@@ -630,6 +647,14 @@ async function runScan() {
     '<div class="ss"><span class="sv">'+allTickers.length+'</span><span class="sl">Screened</span></div>'+
     '<div class="ssep"></div>'+
     '<div class="ss"><span class="sv">'+threshold+'/7</span><span class="sl">Threshold</span></div>';
+  // Sort starred first button
+  var sortBtn = document.createElement("button");
+  sortBtn.id = "sort-btn";
+  sortBtn.style.cssText = "position:absolute;top:0;right:0;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);border-radius:8px;cursor:pointer;padding:6px 14px;font-family:var(--mono);font-size:11px;color:#60a5fa;display:flex;align-items:center;gap:6px";
+  sortBtn.innerHTML = "<span style='font-size:16px'>★</span> Sort starred first";
+  sortBtn.onclick = sortByStars;
+  sb.style.position = "relative";
+  sb.appendChild(sortBtn);
   rc.appendChild(sb);
 
   if(scored.length===0) {
@@ -656,6 +681,7 @@ function buildCard(item, activeCrit) {
   var scoreClass7 = (item.score===7) ? " score7" : "";
   var scoreClass6 = (item.score===6&&item.score<7) ? " score6" : "";
   card.className = "rcard"+(isPass?" pass":isPoss?" possible":"")+scoreClass7+scoreClass6+(isPicked?" picked":"");
+  card.setAttribute("data-score", item.score||score||0);
   var sc = isPass?"s-pass":isPoss?"s-pos":"s-fail";
   var bc = isPass?"pb-pass":isPoss?"pb-pos":"pb-fail";
   var bt = isPass?"PASS":isPoss?"POSSIBLE":"NEAR";
