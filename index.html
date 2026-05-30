@@ -710,7 +710,7 @@ function buildCard(item, activeCrit) {
     '<div><div class="rticker">'+item.ticker+earningsUrgency+debtWarn+'</div><div class="rname">'+(d.companyName||"")+sectorBadge+analystBadge+'</div></div>'+
     '<div style="text-align:right;display:flex;align-items:flex-start;gap:6px">'+
     '<div><div class="rscore '+sc+'">'+item.score+'<span style="font-size:13px;color:var(--mut)">/'+activeCrit.length+'</span></div><span class="pbadge '+bc+'">'+bt+'</span></div>'+
-    '<button class="star-btn'+(isPicked?" on":"")+'" data-ticker="'+item.ticker+'" onclick="starCard(this)" title="Star for My Picks">'+(isPicked?"★":"☆")+'</button>'+
+    '<button class="star-btn'+(isPicked?" on":"")+'" data-t="'+item.ticker+'" onclick="handlePickStar(this)" title="Star for My Picks">'+(isPicked?"★":"☆")+'</button>'+
     '</div>'+
     '</div>'+
     '<div class="rcard-body">'+
